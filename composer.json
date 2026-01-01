@@ -1,0 +1,26 @@
+{
+    "name": "ioc-interop/interface",
+    "description": "Interoperable IOC container interfaces for PHP.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Paul M. Jones",
+            "email": "pmjones@pmjones.io"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "IocInterop\\Interface\\": "./src"
+        }
+    },
+    "require-dev": {
+        "pds/composer-script-names": "^1.0",
+        "pds/skeleton": "^1.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "scripts": {
+        "analyze": "./vendor/bin/phpstan analyze -c phpstan.neon",
+        "check": "composer analyze"
+    }
+}
