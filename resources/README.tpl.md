@@ -35,7 +35,7 @@ This package defines the following interfaces:
 
 - Notes:
 
-    - **Reference implementations** may be found at <https://github.com/ioc-container-interop/impl>.
+    - **Reference implementations** may be found at <https://github.com/ioc-interop/impl>.
 
 ## Q & A
 
