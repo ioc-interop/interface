@@ -75,7 +75,7 @@ order to retrieve other dependencies from it.
 ### Why does _IocContainer_ define `newService()` instead of `make()`, `create()`, or `build()` ?
 
 The researched projects use several different terms to indicate that a new
-service instance will be returned: `build` (2 projects), `create` (1), `get` (6),
+service instance will be returned: `build` (2 projects), `create` (2), `get` (6),
 `make` (3), and `new` (2).
 
 The terms `get` and `make` are ambiguous in the researched projects. They might:

@@ -10,6 +10,7 @@ inversion-of-control containers:
 - [joomla/di](https://github.com/joomla-framework/di) (joomla)
 - [laminas/laminas-di](https://github.com/laminas/laminas-di) (laminas)
 - [league/container](https://github.com/thephpleague/container) (league)
+- [mindplay/unbox](https://github.com/mindplay-dk/unbox) (mindplay)
 - [nette/di](https://github.com/nette/di) (netter)
 - [pimple/pimple](https://github.com/silexphp/Pimple) (pimple)
 - [Phalcon 4.x](https://github.com/phalcon/cphalcon/) (phalcon)
@@ -17,8 +18,8 @@ inversion-of-control containers:
 - [ray/di](https://github.com/ray-di/Ray.Di) (ray)
 - [rdlowrey/auryn](https://github.com/rdlowrey/auryn) (rdlowrey)
 - [symfony/dependency-injection](https://github.com/symfony/dependency-injection) (symfony)
-- [tempest/container](https://packagist.org/packages/tempest/container) (tempest)
-- [yiisoft/di](https://packagist.org/packages/yiisoft/di) (yii)
+- [tempest/container](https://github.com/tempestphp/tempest-container) (tempest)
+- [yiisoft/di](https://github.com/yiisoft/di) (yii)
 
 The following projects were considered but eventually excluded because they use
 external container systems:
@@ -54,6 +55,7 @@ no obvious or discernible container system:
 | illuminate  | x   |     |     |    |
 | laminas     |     |     | x   |    |
 | league      | x   |     |     |    |
+| mindplay    | x   |     |     |    |
 | nette       |     |     |     | x  |
 | phalcon     |     | x   |     |    |
 | phpdi       | x   |     |     |    |
@@ -64,7 +66,7 @@ no obvious or discernible container system:
 | tempest     |     |     |     | x  |
 | yii         | x   |     |     |    |
 
-10 projects are conforming PSR-11 implementations; 6 are modified or non-implementations of PSR-11.
+11 projects are conforming PSR-11 implementations; 6 are modified or non-implementations of PSR-11.
 
 ## Autowiring
 
@@ -84,6 +86,7 @@ The projects allow different autowiring modes:
 | joomla      | x      |         |        |       |
 | laminas     | x      |         |        |       |
 | league      |        | x       |        |       |
+| mindplay    | x      |         |        |       |
 | nette       |        | x       |        |       |
 | phalcon     |        |         |        | x     |
 | phpdi       |        | x       |        |       |
@@ -111,6 +114,7 @@ When getting a service from the container, is the instance ...
 | joomla      |        | x   |
 | laminas     | x      |     |
 | league      | (1)    | (1) |
+| mindplay    | x      |     |
 | nette       | x      |     |
 | phalcon     |        | x   |
 | phpdi       | x      |     |
@@ -140,6 +144,7 @@ The projects afford checking to see if the container "has" a service, but the me
 | joomla      | `has(string $resourceName) : bool`                                  | "Is a resource key set here or in parent container?"      |
 | laminas     | `has(string $name) : bool`                                          | "Has an instance, or can injector create one?"            |
 | league      | `has(string $id) : bool`                                            | "Has a definition, has a tag, has provided, has delegate" |
+| mindplay    | `has(string $name) : bool`                                          | "Has an instanec or factory"
 | nette       | `hasService(string $name) : bool`                                   | "Has an instance or factory"                              |
 | phalcon     | `has(string $name) : bool`                                          | "Has a services key"                                      |
 | phpdi       | `has(string $id) : bool`                                            | "Has an instance, or a resolvable definition"             |
@@ -168,6 +173,7 @@ a new instance, and you won't know from the call-site.
 | joomla      | x (3)        | `get($resourceName) : mixed` |
 | laminas     |              | `get(string $name) : object` |
 | league      | x (4)        | `get(string $id) : mixed` |
+| mindplay    |              | `get(string $name) : ($name is class-string<T> ? T : mixed)` |
 | nette       |              | `getService(string $name) : object` |
 | phalcon     | x (5)        | `getShared(string $name, $parameters = null) : object` |
 | phpdi       |              | `get(string $id) : mixed` |
@@ -210,6 +216,7 @@ a new instance, and you won't know from the call-site.
 | joomla      |          | x       |
 | laminas     | x        |         |
 | league      |          | x       |
+| mindplay    |          | x       |
 | nette       | x        |         |
 | phalcon     | x        |         |
 | phpdi       |          | x       |
@@ -243,6 +250,7 @@ and you won't know from the call-site.
 | joomla      |                 | `buildObject($resourceName)`                          |
 | laminas     |                 |                                                       |
 | league      |                 | `getNew(string $id) : mixed`                          |
+| mindplay    |
 | nette       |                 | `createService(string $name) : object`                |
 | phalcon     |                 |                                                       |
 | phpdi       |                 |                                                       |
@@ -264,6 +272,7 @@ and you won't know from the call-site.
 | joomla      |                 |                                                                                          |
 | laminas     |                 | (3)                                                                                      |
 | league      |                 |                                                                                          |
+| mindplay    |                 | `create(string $class_name, array $map) : object`                                        |
 | nette       |                 |                                                                                          |
 | phalcon     | x (4)           | `get(string $name, $parameters = null) : object`                                         |
 | phpdi       | x (5)           | `make(string $name, array $parameters = []) : mixed`                                     |
@@ -305,6 +314,7 @@ Terminology:
 | joomla      | x     |        |     |      |     |
 | laminas     |       |        |     |      |     |
 | league      |       |        | x   |      | x   |
+| mindplay    |
 | nette       |       | x      |     |      |     |
 | phalcon     |       |        | x   |      |     |
 | phpdi       |       |        |     | x    |     |
@@ -330,6 +340,7 @@ perhaps overwritng an existing service.
 | joomla      | `set($key, $value, true) : $this`                                                             |
 | laminas     | `setInstance(string $name, $service): $this`                                                  |
 | league      | `add(string $id, object $concrete) : DefinitionInterface`                                     |
+| mindplay    | `set(string $name, mixed $value): void` (3)                                                   |
 | nette       | `addService(string $name, object $service) : $this`                                           |
 | phalcon     | `setShared(string $name, object $service) : ServiceInterface`                                 |
 | phpdi       | `set(string $name, mixed $value) : void` (1)                                                  |
@@ -343,6 +354,8 @@ perhaps overwritng an existing service.
 1. `phpdi` overloads this method for definitions, factories, and for setting instances.
 
 2. `rdlowrey` sets the service name to `get_class($instance)`
+
+3. `mindplay` affords this method on its _ContainerFactory_
 
 > N.b.: Already-instantiated services can only be shared; the containers do not
 > return new instances of them. Except Joomla which clones it.
@@ -360,6 +373,7 @@ The projects allow the consumer to set a callable as a factory for creating new 
 | joomla      |       | `set(string $key, callable $value) : $this` |
 | laminas     |       | - |
 | league      |       | ? |
+| mindplay    | (4)   | `register(string $name, $func_or_map_or_type = null, $map = []): void` |
 | nette       |       | `addService(string $name, Closure $service) : $this` |
 | phalcon     | (2)   | `set(string $name, Closure $definition) : mixed` |
 | phpdi       | (3)   | `factory(callable $factory) : FactoryDefinitionHelper` |
@@ -376,6 +390,8 @@ The projects allow the consumer to set a callable as a factory for creating new 
 
 3. `phpdi` uses a the `factory()` function to create a FactoryDefinitionHelper.
 
+4. `mindplay` offers this multiply-overloaded method on its _ContainerFactory_.
+
 ## Factory Callable Signature
 
 When a callable is used as a factory for creating a new instance, this is the callable signature expected by the container.
@@ -389,6 +405,7 @@ When a callable is used as a factory for creating a new instance, this is the ca
 | joomla      | `(Container) : object` |               |                             |
 | laminas     |                        |               | -                           |
 | league      |                        | `() : object` |                             |
+| mindplay    | `(Container) : mixed`  |               |                             |
 | nette       |                        | `() : object` |                             |
 | phalcon     |                        | `() : object` |                             |
 | phpdi       |                        |               | `(mixed ...$args) : object` |
@@ -414,6 +431,7 @@ Does the project allow services already instantiated in the container to be unse
 | joomla      | (2) | (2) |
 | laminas     | x   |     |
 | league      | x   |     |
+| mindplay    |     | x   |
 | nette       | x   |     |
 | phalcon     | x   |     |
 | phpdi       | x   |     |
@@ -445,6 +463,7 @@ needed, other times not.
 | joomla      | x         | x       | x      | `buildObject($resourceName, $shared = false) : object\|false` |
 | laminas     |           | x       | x      | `create(string $name, array $params = []) : object` |
 | league      | x         |         | x      | `resolve(string $id, bool $new = false): mixed` |
+| mindplay    | x         | x       | x      | `create(string $class_name, array $map = []): mixed` |
 | nette       | x         | x       | x      | `createInstance(string $class, array $args = []): object` |
 | phalcon     |           | x       |        | `resolve(?array $parameters = null, ?DiInterface $container = null) : object` |
 | phpdi       |           | x       |        | `resolve(Definition $definition, array $parameters = []) : mixed` |
@@ -473,6 +492,7 @@ Terminology:
 | joomla      | x     |        |     |        |             |      |         |
 | laminas     |       | x      |     |        |             |      |         |
 | league      |       |        |     |        |             |      | x       |
+| mindplay    |       | x      |     |        |             |      |         |
 | nette       |       | x      |     |        |             |      |         |
 | phalcon     |       |        |     |        |             |      | x       |
 | phpdi       |       |        |     |        |             |      | x       |
@@ -496,6 +516,7 @@ Programmatically (imperatively?) sets one or more services into a container; gen
 | joomla      | ServiceProviderInterface | `register(Container $container) : void` |
 | laminas     | (2)                      |                                         |
 | league      | ServiceProviderInterface | `register(): void` (3)                  |
+| mindplay    | ProviderInterface        | `register(ContainerFactory $factory) : void` |
 | nette       | (4)                      |                                         |
 | phalcon     | ServiceProviderInterface | `register(DiInterface di) : void`       |
 | phpdi       | (5)                      |                                         |
@@ -537,6 +558,7 @@ Very few of the researched projects offer a factory or builder for the container
 | joomla      | - | - |
 | laminas     | - | - |
 | league      | - | - |
+| mindplay    | _ContainerFactory_ | `createContainer() : Container` |
 | nette       | (1) | - |
 | phalcon     | - | - |
 | phpdi       | _ContainerBuilder_ | `build() : Container` |
@@ -565,6 +587,7 @@ service instead.
 | joomla      | `alias(Abstract::class, Concrete::class) : $this` |
 | laminas     | (1) |
 | league      | `add(Abstract::class, Concrete::class) : void` |
+| mindplay    | `alias(string $new_name, string $ref_name): void` (3) |
 | nette       | `addAlias(Abstract::class, Concrete::class): void` |
 | phalcon     | - |
 | phpdi       | `[Abstract::class => DI\get(Concrete::class)]` (2) |
@@ -578,6 +601,8 @@ service instead.
 1. `laminas` aliases abstract to concrete types via configuration, not a method.
 
 2. `php-di` aliases an abstract service `$name` to a service instance.
+
+3. `mindplay` offers this method on _ContainerFactory_
 
 ## Service Tagging
 
@@ -594,6 +619,7 @@ Tag one or more services, then get the collection of services with that tag.
 | joomla      | `tag($tag, array $keys) : $this` |
 | laminas     | - |
 | league      | (1) |
+| mindplay    | - |
 | nette       | (2) |
 | phalcon     | - |
 | phpdi       | - |
@@ -625,6 +651,7 @@ Of the 7 that offer some form of service tagging, 3 do so via a _Definition_ and
 | joomla      | `getTagged(string $tag) : object[]` |
 | laminas     | - |
 | league      | (1) |
+| mindplay    | - |
 | nette       | `findByTag(string $tag): array<service-name-string, attributes-array>` |
 | phalcon     | - |
 | phpdi       | - |
