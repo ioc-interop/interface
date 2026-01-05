@@ -41,7 +41,7 @@ no obvious or discernible container system:
 ## PSR-11 Implementations
 
 - "Yes": is a `get(string $id) : mixed` implementation
-- "Opt": offers an `get(string $id) : mixed` implementation as an option
+- "Opt": offers a `get(string $id) : mixed` implementation as an option
 - "Ish": is a `get(string $id) : object` (not `mixed`) implementation
 - "No": not implemented
 
@@ -160,7 +160,7 @@ service was not defined as shared. That is, "get a shared instance" might return
 a new instance, and you won't know from the call-site.
 
 |             | Might be new |  Signature   |
-| ----------- | ------------ | ------------ |
+| ----------- |--------------| ------------ |
 | aura        |              | `get(string $id) : object` |
 | flightphp   | x (1)        | `get(string $id) : object` |
 | ghostwriter |              | `get(string $id) : object` |
@@ -169,14 +169,14 @@ a new instance, and you won't know from the call-site.
 | laminas     |              | `get(string $name) : object` |
 | league      | x (4)        | `get(string $id) : mixed` |
 | nette       |              | `getService(string $name) : object` |
-| phalcon     |              | `getShared(string $name, $parameters = null) : object` |
+| phalcon     | x (5)        | `getShared(string $name, $parameters = null) : object` |
 | phpdi       |              | `get(string $id) : mixed` |
-| pimple      | x (5)        | `offsetGet(string $id) : mixed` |
+| pimple      | x (6)        | `offsetGet(string $id) : mixed` |
 | ray         |              | `getInstance($interface, $name = Name::ANY)` |
-| rdlowrey    | x (6)        | `make($name, array $args = array()) : mixed` |
+| rdlowrey    | x (7)        | `make($name, array $args = array()) : mixed` |
 | symfony     |              | `get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE) : ?object` |
-| tempest     | x (7)        | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
-| yii         | x (8)        | `get(string $id) : ($id is class-string ? T : mixed)` |
+| tempest     | x (8)        | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
+| yii         | x (9)        | `get(string $id) : ($id is class-string ? T : mixed)` |
 
 1. `flightphp` will return a new instance unless the service was set as a `singleton()`.
 
@@ -189,13 +189,15 @@ a new instance, and you won't know from the call-site.
 
 4. `league` will return a new instance unless the service was set as shared.
 
-5. `pimple` will return a new instance if the service was set as a `factory()`
+5. `phalcon` will return a shared instance even if it has been defined as not shared.
 
-6. `rdlowrey` will return a new instance unless the service was set as shared, in which case the `$args` are ignored.
+6. `pimple` will return a new instance if the service was set as a `factory()`
 
-7. `tempest` will return a new instance unless the service was set as shared.
+7. `rdlowrey` will return a new instance unless the service was set as shared, in which case the `$args` are ignored.
 
-8. `yii` will return a new instance if the service was set as a callable.
+8. `tempest` will return a new instance unless the service was set as shared.
+
+9. `yii` will return a new instance if the service was set as a callable.
 
 ## Shared Service Types
 
