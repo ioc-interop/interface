@@ -19,7 +19,8 @@ inversion-of-control containers:
 - [rdlowrey/auryn](https://github.com/rdlowrey/auryn) (rdlowrey)
 - [symfony/dependency-injection](https://github.com/symfony/dependency-injection) (symfony)
 - [tempest/container](https://github.com/tempestphp/tempest-container) (tempest)
-- [yiisoft/di](https://github.com/yiisoft/di) (yii)
+- [yiisoft/di](https://github.com/yiisoft/di) (yii-di)
+- [yiisoft/factory](https://github.com/yiisoft/di) (yii-factory)
 
 The following projects were considered but eventually excluded because they use
 external container systems:
@@ -64,7 +65,7 @@ no obvious or discernible container system:
 | rdlowrey    | x   |     |     |    |
 | symfony     | x   |     |     |    |
 | tempest     |     |     |     | x  |
-| yii         | x   |     |     |    |
+| yii-di      | x   |     |     |    |
 
 11 projects are conforming PSR-11 implementations; 6 are modified or non-implementations of PSR-11.
 
@@ -95,7 +96,7 @@ The projects allow different autowiring modes:
 | rdlowrey    | x      |         |        |       |
 | symfony     |        | x       |        |       |
 | tempest     |        |         | x      |       |
-| yii         | x      |         |        |       |
+| yii-di      | x      |         |        |       |
 
 
 ## Default: Shared or New?
@@ -123,7 +124,7 @@ When getting a service from the container, is the instance ...
 | rdlowrey    |        | x   |
 | symfony     | x      |     |
 | tempest     |        | x   |
-| yii         | x      |     |
+| yii-di      | x      |     |
 
 1. `league` can switch defaults via `defaultToShared(bool $shared = true)`
 
@@ -153,7 +154,7 @@ The projects afford checking to see if the container "has" a service, but the me
 | rdlowrey    | -                                                                   | -                                                         |
 | symfony     | `has(string $id) : bool`                                            | "Has an instance, or is mapped from a file or method"     |
 | tempest     | `has(string $className, null\|string\|UnitEnum $tag = null) : bool` | "Has a definition or a singleton"                         |
-| yii         | `has(string $id) : bool`                                            | "Has a definition or a tag"                               |
+| yii-di      | `has(string $id) : bool`                                            | "Has a definition or a tag"                               |
 
 
 ## Get a shared service instance
@@ -165,7 +166,7 @@ service was not defined as shared. That is, "get a shared instance" might return
 a new instance, and you won't know from the call-site.
 
 |             | Might be new |  Signature   |
-| ----------- |--------------| ------------ |
+| ----------- | ------------ | ------------ |
 | aura        |              | `get(string $id) : object` |
 | flightphp   | x (1)        | `get(string $id) : object` |
 | ghostwriter |              | `get(string $id) : object` |
@@ -182,7 +183,7 @@ a new instance, and you won't know from the call-site.
 | rdlowrey    | x (7)        | `make($name, array $args = array()) : mixed` |
 | symfony     |              | `get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE) : ?object` |
 | tempest     | x (8)        | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
-| yii         | x (9)        | `get(string $id) : ($id is class-string ? T : mixed)` |
+| yii-di      | x            | `get(string $id) : ($id is class-string ? T : mixed)` |
 
 1. `flightphp` will return a new instance unless the service was set as a `singleton()`.
 
@@ -202,8 +203,6 @@ a new instance, and you won't know from the call-site.
 7. `rdlowrey` will return a new instance unless the service was set as shared, in which case the `$args` are ignored.
 
 8. `tempest` will return a new instance unless the service was set as shared.
-
-9. `yii` will return a new instance if the service was set as a callable.
 
 ## Shared Service Types
 
@@ -225,7 +224,7 @@ a new instance, and you won't know from the call-site.
 | rdlowrey    | x        |         |
 | symfony     | x (1)    |         |
 | tempest     | x        |         |
-| yii         |          | x       |
+| yii-di      |          | x       |
 
 1. `symfony` is `?object`.
 
@@ -259,7 +258,7 @@ and you won't know from the call-site.
 | rdlowrey    |                 |                                                       |
 | symfony     |                 |                                                       |
 | tempest     |                 |                                                       |
-| yii         | x (9)           | `get(string $id) : ($id is class-string ? T : mixed)` |
+| yii-di      |                 |                                                       |
 
 ### Arguments accepted but not required
 
@@ -281,7 +280,7 @@ and you won't know from the call-site.
 | rdlowrey    | x (7)           | `make($name, array $args = array()) : object`                                            |
 | symfony     |                 |                                                                                          |
 | tempest     | x (8)           | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object`  |
-| yii         | x (9)           |                                                                                          |
+| yii-di      |                 |                                                                                          |
 
 ### Notes
 
@@ -300,8 +299,6 @@ and you won't know from the call-site.
 7. `rdlowrey` returns a shared instance if it has been set via `share()`, ignoring `$args`.
 
 8. `tempest` returns a shared instance if it was set as a singleton.
-
-9. `yii` returns a shared instance if it was not set as a callable.
 
 Terminology:
 
@@ -323,7 +320,7 @@ Terminology:
 | rdlowrey    |       |        |     | x    |     |
 | symfony     |       |        |     |      |     |
 | tempest     |       |        | x   |      |     |
-| yii         |       |        | x   |      |     |
+| yii-di      |       |        | x   |      |     |
 
 
 ## Set a shared service instance
@@ -349,7 +346,7 @@ perhaps overwritng an existing service.
 | rdlowrey    | `share(object $instance) : $this` (2)                                                         |
 | symfony     | `set(string $id, ?object $service) : void`                                                    |
 | tempest     | `singleton(string $className, object $definition, null\|string\|UnitEnum $tag = null) : self` |
-| yii         | -                                                                                             |
+| yii-di      | -                                                                                             |
 
 1. `phpdi` overloads this method for definitions, factories, and for setting instances.
 
@@ -382,7 +379,7 @@ The projects allow the consumer to set a callable as a factory for creating new 
 | rdlowrey    |       | `delegate(string $name, callable $callableOrMethodStr) : $this` |
 | symfony     |       | - |
 | tempest     |       | `register(string $className, callable $definition) : $this` |
-| yii         |       | - |
+| yii-di      |       | - |
 
 1. `ghostwriter` treats the `$factory` value as the string class name of an invokable object.
 
@@ -414,7 +411,7 @@ When a callable is used as a factory for creating a new instance, this is the ca
 | rdlowrey    |                        |               | `(array) : object`          |
 | symfony     | `(Container) : object` |               |                             |
 | tempest     | `(Container) : object` |               |                             |
-| yii         |                        |               | -                           |
+| yii-di      |                        |               | -                           |
 
 None of the factory callables expect to receive override arguments from a custom factory.
 
@@ -440,7 +437,7 @@ Does the project allow services already instantiated in the container to be unse
 | rdlowrey    |     | x   |
 | symfony     | x   |     |
 | tempest     | x   |     |
-| yii         |     | x   |
+| yii-di      |     | x   |
 
 1. `aura` is settable until the container is `lock()`ed, and is not settable afterwards.
 
@@ -472,7 +469,7 @@ needed, other times not.
 | rdlowrey    | x         | x       | x      | `make($name, array $args = array()) : object` |
 | symfony     | x         |         | x      | `make(self $container, string $id, int $invalidBehavior): ?object` |
 | tempest     | x         |         | x      | `resolve(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params): object` |
-| yii         | x         |         | x      | `build(string $id): mixed` |
+| yii-di      | x         |         | x      | `build(string $id): mixed` |
 
 1. `pimple` may return a shared instance.
 
@@ -501,7 +498,7 @@ Terminology:
 | rdlowrey    |       |        |     |        |             | x    |         |
 | symfony     |       |        |     |        |             | x    |         |
 | tempest     |       |        |     |        |             |      | x       |
-| yii         | x     |        |     |        |             |      |         |
+| yii-di      | x     |        |     |        |             |      |         |
 
 ## Providing, registering, defining, configuring, or loading services
 
@@ -525,25 +522,27 @@ Programmatically (imperatively?) sets one or more services into a container; gen
 | rdlowrey    |                          |                                         |
 | symfony     | (7)                      |                                         |
 | tempest     |                          |                                         |
-| yii         | (8)                      |                                         |
+| yii-di      | ServiceProviderInterface | `getDefinitions(): array` and `getExtensions(): array` (8) |
 
 (Config file is more declarative.)
 
-1. `illuminate` gives access to the container via `$this->app`.
+1.  `illuminate` gives access to the container via `$this->app`.
 
-2. `laminas` does service configuration, not provision per se.
+2.  `laminas` does service configuration, not provision per se.
 
-3. `league` gives access to the container via `$this->getContainer()`.
+3.  `league` gives access to the container via `$this->getContainer()`.
 
-4. `nette` does service configuration, not provision per se.
+4.  `nette` does service configuration, not provision per se.
 
-5. `phpdi` does service configuration through definitions separate from the container, not provision per se, though it is programmatic.
+5.  `phpdi` does service configuration through definitions separate from the container, not provision per se, though it is programmatic.
 
-6. `ray` collects definitions from source code attributes/annotations.
+6.  `ray` collects definitions from source code attributes/annotations.
 
-7. `symfony` does service configuration, not provision per se.
+7.  `symfony` does service configuration, not provision per se.
 
-8. `yii` does service configuration through definitions separate from the container, not provision per se.
+8. `yii-di` splits provision into definition arrays and callable extenders
+    (post-construction modification logic); cf.
+    https://github.com/yiisoft/di?tab=readme-ov-file#using-service-providers
 
 ## Creating the container itself
 
@@ -567,7 +566,7 @@ Very few of the researched projects offer a factory or builder for the container
 | rdlowrey    | - | - |
 | symfony     | (2) | - |
 | tempest     | - | - |
-| yii         | - | - |
+| yii-di      | - | - |
 
 1. `nette` _ContainerBuilder_ looks like it is part of a compiler system.
 
@@ -596,13 +595,15 @@ service instead.
 | rdlowrey    | `alias(Abstract::class, Concrete::class) : $this` |
 | symfony     | `alias(Abstract::class, Concrete::class) : AliasConfigurator`|
 | tempest     | - |
-| yii         | - | # maybe it does, check set() again
+| yii-di      | (4) |
 
 1. `laminas` aliases abstract to concrete types via configuration, not a method.
 
 2. `php-di` aliases an abstract service `$name` to a service instance.
 
 3. `mindplay` offers this method on _ContainerFactory_
+
+4. `yii-di` supports aliases via `class_alias()`.
 
 ## Service Tagging
 
@@ -628,7 +629,7 @@ Tag one or more services, then get the collection of services with that tag.
 | rdlowrey    | - |
 | symfony     | (3) |
 | tempest     | `singleton(string $className, mixed $definition, null\|string\|UnitEnum $tag = null): self;` |
-| yii         | (4) |
+| yii-di      | (4) |
 
 1. `league` offers `addTag(string $tag)` on each _Definition_
 
@@ -660,7 +661,7 @@ Of the 7 that offer some form of service tagging, 3 do so via a _Definition_ and
 | rdlowrey    | - |
 | symfony     | `findTaggedServiceIds(string $name): array<int, service-id>` |
 | tempest     | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` (2) |
-| yii         | `get(TagReference::id($tag)) : object[]` |
+| yii-di      | `get(TagReference::id($tag)) : object[]` |
 
 1. `league` offers `resolveTagged($tag)` and `resolveTaggedNew($tag)` on a _DefinitionAggregate_
 
