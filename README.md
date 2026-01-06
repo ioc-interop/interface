@@ -5,7 +5,7 @@ This package provides interoperable interfaces for inversion-of-control
 practices identified within [several pre-existing projects][README-RESEARCH.md].
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-"SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
 interpreted as described in [BCP 14][] ([RFC 2119][], [RFC 8174][]).
 
 ## Interfaces
@@ -14,7 +14,7 @@ This package defines the following interfaces:
 
 - [_IocContainer_][] affords obtaining service instances by name, whether as shared instances or new unshared instances.
 
-- [_IocServices_][] affords a registry  of service instances, factories, and aliases.
+- [_IocServices_][] affords a registry of service instances, factories, and aliases.
 
 - [_IocProvider_][] affords provision of service instances, factories, and aliases to an [_IocServices_][] instance.
 
@@ -89,7 +89,7 @@ name, whether as shared instances or new unshared instances.
 
 ### _IocServices_
 
-The [_IocServices_][] interface affords a registry  of service instances,
+The [_IocServices_][] interface affords a registry of service instances,
 factories, and aliases.
 
 - Directives:
