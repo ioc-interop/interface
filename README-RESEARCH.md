@@ -22,6 +22,12 @@ inversion-of-control containers:
 - [yiisoft/di](https://github.com/yiisoft/di) (yii-di)
 - [yiisoft/factory](https://github.com/yiisoft/di) (yii-factory)
 
+> **Note:**
+>
+> The `yii` projects are unusual, in that they keep shared service functionality
+> in a `di` package, but keep new-instance functionality in a separate `factory`
+> package.
+
 The following projects were considered but eventually excluded because they use
 external container systems:
 
@@ -66,8 +72,9 @@ no obvious or discernible container system:
 | symfony     | x   |     |     |    |
 | tempest     |     |     |     | x  |
 | yii-di      | x   |     |     |    |
+| yii-factory |     |     |     | x  |
 
-11 projects are conforming PSR-11 implementations; 6 are modified or non-implementations of PSR-11.
+12 projects are conforming PSR-11 implementations; 6 are modified or non-implementations of PSR-11.
 
 ## Autowiring
 
@@ -97,6 +104,7 @@ The projects allow different autowiring modes:
 | symfony     |        | x       |        |       |
 | tempest     |        |         | x      |       |
 | yii-di      | x      |         |        |       |
+| yii-factory |        |         |        | x     |
 
 
 ## Default: Shared or New?
@@ -125,6 +133,7 @@ When getting a service from the container, is the instance ...
 | symfony     | x      |     |
 | tempest     |        | x   |
 | yii-di      | x      |     |
+| yii-factory |        | x   |
 
 1. `league` can switch defaults via `defaultToShared(bool $shared = true)`
 
@@ -155,6 +164,7 @@ The projects afford checking to see if the container "has" a service, but the me
 | symfony     | `has(string $id) : bool`                                            | "Has an instance, or is mapped from a file or method"     |
 | tempest     | `has(string $className, null\|string\|UnitEnum $tag = null) : bool` | "Has a definition or a singleton"                         |
 | yii-di      | `has(string $id) : bool`                                            | "Has a definition or a tag"                               |
+| yii-factory | -                                                                   | -                                                         |
 
 
 ## Get a shared service instance
@@ -183,7 +193,8 @@ a new instance, and you won't know from the call-site.
 | rdlowrey    | x (6)        | `make($name, array $args = array()) : mixed` |
 | symfony     |              | `get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE) : ?object` |
 | tempest     | x (7)        | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
-| yii-di      | x            | `get(string $id) : ($id is class-string ? T : mixed)` |
+| yii-di      |              | `get(string $id) : ($id is class-string ? T : mixed)` |
+| yii-factory |              | |
 
 1. `flightphp` will return a new instance unless the service was set as a `singleton()`.
 
@@ -223,6 +234,7 @@ a new instance, and you won't know from the call-site.
 | symfony     | x (1)    |         |
 | tempest     | x        |         |
 | yii-di      |          | x       |
+| yii-factory |          | x       |
 
 1. `symfony` is `?object`.
 
@@ -257,6 +269,7 @@ and you won't know from the call-site.
 | symfony     |                 |                                                       |
 | tempest     |                 |                                                       |
 | yii-di      |                 |                                                       |
+| yii-factory |                 |                                                       |
 
 ### Arguments accepted but not required
 
@@ -279,7 +292,7 @@ and you won't know from the call-site.
 | symfony     |                 |                                                                                          |
 | tempest     | x (8)           | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object`  |
 | yii-di      |                 |                                                                                          |
-
+| yii-factory |                 | `create(mixed $config) : mixed` (9) |
 ### Notes
 
 1. `flightphp` returns a shared instance if the service was set as a `singleton()`.
@@ -298,6 +311,8 @@ and you won't know from the call-site.
 
 8. `tempest` returns a shared instance if it was set as a singleton.
 
+9. `yii-factory` accepts a class name, definition array, or callable.
+
 Terminology:
 
 |             | Build | Create | Get | Make | New |
@@ -309,7 +324,7 @@ Terminology:
 | joomla      | x     |        |     |      |     |
 | laminas     |       |        |     |      |     |
 | league      |       |        | x   |      | x   |
-| mindplay    |
+| mindplay    |       | x      |     |      |     |
 | nette       |       | x      |     |      |     |
 | phalcon     |       |        | x   |      |     |
 | phpdi       |       |        |     | x    |     |
@@ -319,6 +334,7 @@ Terminology:
 | symfony     |       |        |     |      |     |
 | tempest     |       |        | x   |      |     |
 | yii-di      |       |        | x   |      |     |
+| yii-factory |       | x      |     |      |     |
 
 
 ## Set a shared service instance
@@ -333,9 +349,9 @@ perhaps overwritng an existing service.
 | ghostwriter | `set(string $id, object $value) : void`                                                       |
 | illuminate  | `instance(string $abstract, object $concrete) : void`                                         |
 | joomla      | `set($key, $value, true) : $this`                                                             |
-| laminas     | `setInstance(string $name, $service): $this`                                                  |
+| laminas     | `setInstance(string $name, $service) : $this`                                                  |
 | league      | `add(string $id, object $concrete) : DefinitionInterface`                                     |
-| mindplay    | `set(string $name, mixed $value): void` (3)                                                   |
+| mindplay    | `set(string $name, mixed $value) : void` (3)                                                   |
 | nette       | `addService(string $name, object $service) : $this`                                           |
 | phalcon     | `setShared(string $name, object $service) : ServiceInterface`                                 |
 | phpdi       | `set(string $name, mixed $value) : void` (1)                                                  |
@@ -345,6 +361,7 @@ perhaps overwritng an existing service.
 | symfony     | `set(string $id, ?object $service) : void`                                                    |
 | tempest     | `singleton(string $className, object $definition, null\|string\|UnitEnum $tag = null) : self` |
 | yii-di      | -                                                                                             |
+| yii-factory | -                                                                                             |
 
 1. `phpdi` overloads this method for definitions, factories, and for setting instances.
 
@@ -368,7 +385,7 @@ The projects allow the consumer to set a callable as a factory for creating new 
 | joomla      |       | `set(string $key, callable $value) : $this` |
 | laminas     |       | - |
 | league      |       | ? |
-| mindplay    | (4)   | `register(string $name, $func_or_map_or_type = null, $map = []): void` |
+| mindplay    | (4)   | `register(string $name, $func_or_map_or_type = null, $map = []) : void` |
 | nette       |       | `addService(string $name, Closure $service) : $this` |
 | phalcon     | (2)   | `set(string $name, Closure $definition) : mixed` |
 | phpdi       | (3)   | `factory(callable $factory) : FactoryDefinitionHelper` |
@@ -378,6 +395,7 @@ The projects allow the consumer to set a callable as a factory for creating new 
 | symfony     |       | - |
 | tempest     |       | `register(string $className, callable $definition) : $this` |
 | yii-di      |       | - |
+| yii-factory |       | `create(callable $config) : mixed` |
 
 1. `ghostwriter` treats the `$factory` value as the string class name of an invokable object.
 
@@ -453,21 +471,21 @@ needed, other times not.
 | ----------- | --------- | ------- | ------ | --------- |
 | aura        |           | x       |        | `resolve(Blueprint $blueprint, array $contextualBlueprints = []) : object` |
 | flightphp   | x         |         | x      | `resolve(string $id) : object` |
-| ghostwriter | x         |         | x      | `instantiate(string $service, array $arguments = []): object` |
+| ghostwriter | x         |         | x      | `instantiate(string $service, array $arguments = []) : object` |
 | illuminate  | x         |         | x      | `resolve($abstract, $parameters = [], $raiseEvents = true) : ($abstract is class-string<TClass> ? TClass : mixed)` |
 | joomla      | x         | x       | x      | `buildObject($resourceName, $shared = false) : object\|false` |
 | laminas     |           | x       | x      | `create(string $name, array $params = []) : object` |
-| league      | x         |         | x      | `resolve(string $id, bool $new = false): mixed` |
-| mindplay    | x         | x       | x      | `create(string $class_name, array $map = []): mixed` |
-| nette       | x         | x       | x      | `createInstance(string $class, array $args = []): object` |
+| league      | x         |         | x      | `resolve(string $id, bool $new = false) : mixed` |
+| mindplay    | x         | x       | x      | `create(string $class_name, array $map = []) : mixed` |
+| nette       | x         | x       | x      | `createInstance(string $class, array $args = []) : object` |
 | phalcon     |           | x       |        | `resolve(?array $parameters = null, ?DiInterface $container = null) : object` |
 | phpdi       |           | x       |        | `resolve(Definition $definition, array $parameters = []) : mixed` |
 | pimple      | x         | x       | x      | `offsetGet($id) : mixed` (1) |
 | ray         |           | x       |        | `inject(Container $container) : object` |
 | rdlowrey    | x         | x       | x      | `make($name, array $args = array()) : object` |
-| symfony     | x         |         | x      | `make(self $container, string $id, int $invalidBehavior): ?object` |
-| tempest     | x         |         | x      | `resolve(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params): object` |
-| yii-di      | x         |         | x      | `build(string $id): mixed` |
+| symfony     | x         |         | x      | `make(self $container, string $id, int $invalidBehavior) : ?object` |
+| tempest     | x         |         | x      | `resolve(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
+| yii-di      | x         |         | x      | `build(string $id) : mixed` |
 
 1. `pimple` may return a shared instance.
 
@@ -510,7 +528,7 @@ Programmatically (imperatively?) sets one or more services into a container; gen
 | illuminate  | ServiceProvider          | `register() : void` (1)                 |
 | joomla      | ServiceProviderInterface | `register(Container $container) : void` |
 | laminas     | (2)                      |                                         |
-| league      | ServiceProviderInterface | `register(): void` (3)                  |
+| league      | ServiceProviderInterface | `register() : void` (3)                  |
 | mindplay    | ProviderInterface        | `register(ContainerFactory $factory) : void` |
 | nette       | (4)                      |                                         |
 | phalcon     | ServiceProviderInterface | `register(DiInterface di) : void`       |
@@ -520,7 +538,7 @@ Programmatically (imperatively?) sets one or more services into a container; gen
 | rdlowrey    |                          |                                         |
 | symfony     | (7)                      |                                         |
 | tempest     |                          |                                         |
-| yii-di      | ServiceProviderInterface | `getDefinitions(): array` and `getExtensions(): array` (8) |
+| yii-di      | ServiceProviderInterface | `getDefinitions() : array` and `getExtensions() : array` (8) |
 
 (Config file is more declarative.)
 
@@ -579,13 +597,13 @@ service instead.
 | ----------- | ----------------------------- |
 | aura        | `$di->types[Abstract::class] = $di->lazyGet(Concrete::class);` |
 | flightphp   | `set(Abstract::class, Concrete::class) : void` |
-| ghostwriter | `alias(Abstract::class, Concrete::class): void` |
+| ghostwriter | `alias(Abstract::class, Concrete::class) : void` |
 | illuminate  | `alias(Abstract::class, Concrete::class) : void` |
 | joomla      | `alias(Abstract::class, Concrete::class) : $this` |
 | laminas     | (1) |
 | league      | `add(Abstract::class, Concrete::class) : void` |
-| mindplay    | `alias(string $new_name, string $ref_name): void` (3) |
-| nette       | `addAlias(Abstract::class, Concrete::class): void` |
+| mindplay    | `alias(string $new_name, string $ref_name) : void` (3) |
+| nette       | `addAlias(Abstract::class, Concrete::class) : void` |
 | phalcon     | - |
 | phpdi       | `[Abstract::class => DI\get(Concrete::class)]` (2) |
 | pimple      | `$pimple[Abstract::class] = fn($c) => return $c[Concrete::class];` |
@@ -626,8 +644,9 @@ Tag one or more services, then get the collection of services with that tag.
 | ray         | - |
 | rdlowrey    | - |
 | symfony     | (3) |
-| tempest     | `singleton(string $className, mixed $definition, null\|string\|UnitEnum $tag = null): self;` |
+| tempest     | `singleton(string $className, mixed $definition, null\|string\|UnitEnum $tag = null) : self;` |
 | yii-di      | (4) |
+| yii-factory | - |
 
 1. `league` offers `addTag(string $tag)` on each _Definition_
 
@@ -651,15 +670,16 @@ Of the 7 that offer some form of service tagging, 3 do so via a _Definition_ and
 | laminas     | - |
 | league      | (1) |
 | mindplay    | - |
-| nette       | `findByTag(string $tag): array<service-name-string, attributes-array>` |
+| nette       | `findByTag(string $tag) : array<service-name-string, attributes-array>` |
 | phalcon     | - |
 | phpdi       | - |
 | pimple      | - |
 | ray         | - |
 | rdlowrey    | - |
-| symfony     | `findTaggedServiceIds(string $name): array<int, service-id>` |
+| symfony     | `findTaggedServiceIds(string $name) : array<int, service-id>` |
 | tempest     | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` (2) |
 | yii-di      | `get(TagReference::id($tag)) : object[]` |
+| yii-factory | - |
 
 1. `league` offers `resolveTagged($tag)` and `resolveTaggedNew($tag)` on a _DefinitionAggregate_
 
