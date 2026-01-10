@@ -74,7 +74,7 @@ no obvious or discernible container system:
 | yii-di      | x   |     |     |    |
 | yii-factory |     |     |     | x  |
 
-12 projects are conforming PSR-11 implementations; 6 are modified or non-implementations of PSR-11.
+11 projects offer conforming PSR-11 implementations; 7 are modified or non-implementations of PSR-11.
 
 ## Autowiring
 
@@ -139,7 +139,7 @@ When getting a service from the container, is the instance ...
 
 N.b.: The projects that are new-by-default allow marking individual services as shared.
 
-9 projects are shared-by-default; 6 are new-by-default; 1 allows either.
+10 projects are shared-by-default; 7 are new-by-default; 1 allows either.
 
 ## Has a service
 
@@ -242,13 +242,40 @@ a new instance, and you won't know from the call-site.
 
 ## Get a new service instance
 
-The projects allow returning a newly-created (non-shared/non-singleton) service instance.
+These projects allow returning a newly-created (non-shared/non-singleton) service instance.
 
 Many of them allow specifying constructor or setter arguments for the new instance.
 
 Note that the new-by-default containers will return a shared instance if the
 service was defined as shared. So "new instance" might return a shared instance,
 and you won't know from the call-site.
+
+### Provides new service instance functionality
+
+(Even though the instance might be shared.)
+
+Might be good to say "uses a separate different additonal method" for new instances.
+
+|             | Different from shared | Example Signature                                             |
+| ----------- | --------------------- | ----------------------------------------------------- |
+| aura        | x                     | `newInstance(string $class, array $mergeParams = [], array $mergeSetters = []) : object` |
+| flightphp   |                       | `get(string $id) : object`                            |
+| ghostwriter | x                     | `build(string $id, array $arguments = []) : object`   |
+| illuminate  | x                     | `make(string\|class-string<TClass>\|callable $abstract, array $parameters = []) : ($abstract is class-string<TClass> ? TClass : mixed)` |
+| joomla      | x                     | `buildObject($resourceName)`                          |
+| laminas     |                       | (3)                                                   |
+| league      | x                     | `getNew(string $id) : mixed`                          |
+| mindplay    | x                     | `create(string $class_name, array $map) : object`     |
+| nette       | x                     | `createService(string $name) : object`                |
+| phalcon     |                       | `get(string $name, $parameters = null) : object`      |
+| phpdi       | x                     | `make(string $name, array $parameters = []) : mixed`  |
+| pimple      |                       | `offsetGet($id) : mixed`                              |
+| ray         | x                     | `getInstance($interface, $name = Name::ANY) : object` |
+| rdlowrey    | x                     | `make($name, array $args = array()) : object`         |
+| symfony     |                       | -                                                     |
+| tempest     |                       | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object`  |
+| yii-di      |                       | -                                                     |
+| yii-factory | x                     | `create(mixed $config) : mixed` (9)                   |
 
 ### Arguments not accepted
 
@@ -295,6 +322,9 @@ and you won't know from the call-site.
 | tempest     | x (8)           | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object`  |
 | yii-di      |                 |                                                                                          |
 | yii-factory |                 | `create(mixed $config) : mixed` (9) |
+
+So it's more that these mostly define *services* as singleton/transient.
+
 ### Notes
 
 1. `flightphp` returns a shared instance if the service was set as a `singleton()`.
@@ -687,13 +717,109 @@ Of the 7 that offer some form of service tagging, 3 do so via a _Definition_ and
 
 2. `tempest` appears to return only one tagged service at a time; looks like a way to label different instances of the same services.
 
+## Annotations/Attributes
+
+Some projects offer annotations or attributes to inform the container on how to
+build services, whether on-demand by reflection or through a collect-and-compile
+process.
+
+
+|             | Annotations | Attributes | Neither |
+| ----------- | ----------- | ---------- | ------- |
+| aura        |             | x          |         |
+| flightphp   |             |            | x       |
+| ghostwriter |             |            | x       |
+| illuminate  |             | x          |         |
+| joomla      |             |            | x       |
+| laminas     |             |            | x       |
+| league      |             | x          |         |
+| mindplay    |             |            | x       |
+| nette       |             | x          |         |
+| phalcon     |             |            | x       |
+| phpdi       |             | x          |         |
+| pimple      |             |            | x       |
+| ray         | x           |            |         |
+| rdlowrey    |             |            | x       |
+| symfony     |             | x          |         |
+| tempest     |             | x          |         |
+| yii-di      |             |            | x       |
+| yii-factory |             |            | x       |
+
+aura:
+    new: Instance (string $name) (TARGET_PARAMETER|PROPERTY)
+    get: Service (string $name, ?string $methodName = null) (TARGET_PARAMETER|PROPERTY)
+    plus others
+
+illuminate:
+    bind is alias
+    tag is tag
+    singleton sets shared
+    no new, no get
+    lots of framework-specific attrs
+
+league:
+    new/get: Inject(string $id) (depends on if it's shared or not?) (TARGET_PARAM | REPEATABLE)
+
+nette:
+    ???: Inject() (TARGET_PROPERTY)
+
+phpdi
+    ??? Inject(string|array|null $name = null) Attribute::TARGET_PROPERTY | Attribute::TARGET_METHOD | Attribute::TARGET_PARAMETER
+
+symfony:
+    no new, no get
+
+tempest
+    Autowire
+    Decorator
+    Singleton
+    Inject() is on properties
+    no new, no get
+
+So New and Get attrs are ways of avoiding Factories (esp new) and ways of overriding aliases
+
+inject on constructor, property, setter, invokable method.
+
+need to determine targets
+
+## Extended Construction
+
+Post-contruction modification of service instances, typically setter and property injection, but also decoration and generic method calls. These are often called "extenders."
+
+|             | signature | callable | notes |
+| ----------- | - | - | - |
+| aura        | $di->setters, $di->mutations | | |
+| flightphp   | - | | |
+| ghostwriter | extend(string $id, string $extension) | __invoke(Container) : object | $extension is a FactoryInterface class name
+| illuminate  | extend($abstract, Closure $closure) : void | callable(object, Container) : object | |
+| joomla      | extend($resourceName, callable $callable) | callable($object, Container) : object |  Extend a defined service Closure by wrapping the existing one with a new callable function.
+| laminas     | - | | |
+| league      | (1) |
+| mindplay    | ContaerinFctory::configure($name_or_func, $func_or_map = null, $map = []) |
+| nette       | (2) |
+| phalcon     | - | | |
+| phpdi       | create()->method(), ->property() | - | operates on an _ObjectDefinition_ (3) |
+| pimple      | extend($id, $callable) | callable(object, Container) : object  |
+| ray         | (4) | | |
+| rdlowrey    | prepare($name, $callableOrMethodStr) | callable(object, Injector) : object | |
+| symfony     | addMethodCall('setLogger', [new Reference('logger')]); | | (5) |
+| tempest     | (6) |
+| yii-di      | (7) |
+| yii-factory | - | | |
+
+1. `league` extends via Definition calls; only `addMethodCall()` (setter injection)
+2. `nette` looks non-programmatic (uses config files)
+3. `phpdi` cf <https://php-di.org/doc/php-definitions.html#objects>
+4. `ray` looks non-programmatic (use attributes for setter injection, no property injection)
+5. `symfony` extends via ServiceDefinition calls (cf. <https://symfony.com/doc/current/service_container/definitions.html>)
+6. `tempest` discovers #[Decorator] attributes.
+7. `yii-di` offers setter and property injection, but only at construction-time ... ?
+
 * * *
 
 ## Topics not analyzed
 
 - Container ...
-
-    - Attribute/annotation collection and resolution
 
     - Compiling
 
@@ -703,7 +829,10 @@ Of the 7 that offer some form of service tagging, 3 do so via a _Definition_ and
 
     - Serializing
 
-- Definitions (these should be here and not on the service collection)
+- Contextual binding (when class Foo wants Bar give Baz otherwise give Dib)
+  (may be addressable with attributes)
+
+- Post-constuction modification
 
     - Property injection
 
@@ -713,4 +842,10 @@ Of the 7 that offer some form of service tagging, 3 do so via a _Definition_ and
 
     - Decoration/replacement
 
-    - Contextual binding (when class Foo wants Bar give Baz otherwise give Dib)
+- Definitions
+
+    - Builder object methods
+
+    - Array-based specifications
+
+    - Operate as resolver, or embedded in container, or elsewhere?
