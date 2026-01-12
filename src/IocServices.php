@@ -4,14 +4,14 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocServices_][] interface affords a registry  of service instances,
- * factories, and aliases.
+ * The [_IocServices_][] interface affords a registry of service instances,
+ * builders, and aliases.
  *
  * - Directives:
  *
- *     - Implementations MUST NOT convert any `$serviceName` argument to its alias.
+ *     - Implementations MUST NOT convert any `$serviceName` argument to its
+ *       alias.
  *
- * @phpstan-import-type ioc_service_factory_callable from IocTypeAliases
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
  */
@@ -53,47 +53,53 @@ interface IocServices
     public function unsetServiceInstance(string $serviceName) : void;
 
     /**
-     * Has a factory for the `$serviceName` been set?
-     *
-     * @param ioc_service_name_string $serviceName
-     */
-    public function hasServiceFactory(string $serviceName) : bool;
-
-    /**
-     * Returns the factory for the `$serviceName`.
-     *
-     * - Directives:
-     *
-     *     - Implementations MUST throw [_IocThrowable_][] a factory for the
-     *       `$serviceName` is not available.
-     *
-     * @param ioc_service_name_string $serviceName
-     * @return ioc_service_factory_callable
-     */
-    public function getServiceFactory(string $serviceName) : callable;
-
-    /**
-     * Sets the factory for the `$serviceName`.
+     * Has an [_IocServiceBuilder_][] for the `$serviceName` been set?
      *
      * - Notes:
      *
-     *     - **The `callable` type allows for a wide range of implementations.**
-     *       Cf. the <https://php.net/callable> documentation for more.
+     *     - **TBD** May not have much meaning since getServiceBuilder() always
+     *       returns an instance.
      *
      * @param ioc_service_name_string $serviceName
-     * @param ioc_service_factory_callable $serviceFactory
      */
-    public function setServiceFactory(
+    public function hasServiceBuilder(string $serviceName) : bool;
+
+    /**
+     * Returns the [_IocServiceBuilder_][] for the `$serviceName`, instantiating
+     * it if needed.
+     *
+     * - Notes:
+     *
+     *     - **TBD** Create using newServiceBuilder() and retain for later
+     *       return.
+     *
+     * @param ioc_service_name_string $serviceName
+     */
+    public function getServiceBuilder(string $serviceName) : IocServiceBuilder;
+
+    /**
+     * Returns a new [_IocServiceBuilder_][] for the `$serviceName`.
+     *
+     * @param ioc_service_name_string $serviceName
+     */
+    public function newServiceBuilder(string $serviceName) : IocServiceBuilder;
+
+    /**
+     * Sets the [_IocServiceBuilder_][] for the `$serviceName`.
+     *
+     * @param ioc_service_name_string $serviceName
+     */
+    public function setServiceBuilder(
         string $serviceName,
-        callable $serviceFactory,
+        IocServiceBuilder $serviceBuilder,
     ) : void;
 
     /**
-     * Unsets the factory for the `$serviceName`.
+     * Unsets the [_IocServiceBuilder_][] for the `$serviceName`.
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function unsetServiceFactory(string $serviceName) : void;
+    public function unsetServiceBuilder(string $serviceName) : void;
 
     /**
      * Has an alias for the `$serviceName` been set?

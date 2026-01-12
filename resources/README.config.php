@@ -3,7 +3,10 @@
     'files' => [
         dirname(__DIR__) . "/src/IocContainer.php",
         dirname(__DIR__) . "/src/IocServices.php",
-        dirname(__DIR__) . "/src/IocProvider.php",
+        dirname(__DIR__) . "/src/IocServicesProvider.php",
+        dirname(__DIR__) . "/src/IocServiceBuilder.php",
+        dirname(__DIR__) . "/src/IocServiceResolver.php",
+        dirname(__DIR__) . "/src/IocParameterResolver.php",
         dirname(__DIR__) . "/src/IocContainerFactory.php",
         dirname(__DIR__) . "/src/IocThrowable.php",
         dirname(__DIR__) . "/src/IocTypeAliases.php",

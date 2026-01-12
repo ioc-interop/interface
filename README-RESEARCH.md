@@ -48,9 +48,9 @@ no obvious or discernible container system:
 
 ## PSR-11 Implementations
 
-- "Yes": is a `get(string $id) : mixed` implementation
-- "Opt": offers a `get(string $id) : mixed` implementation as an option
-- "Ish": is a `get(string $id) : object` (not `mixed`) implementation
+- "Yes": is a conforming `get(string $id) : mixed` implementation
+- "Opt": offers a conforming `get(string $id) : mixed` implementation as an option
+- "Ish": is a modified `get(string $id) : object` (not `mixed`) implementation
 - "No": not implemented
 
 |             | Yes | Opt | Ish | No |
@@ -413,7 +413,7 @@ The projects allow the consumer to set a callable as a factory for creating new 
 | aura        |       | `set($key, Closure $val) : $this`                                                             |
 | flightphp   |       | `set($id, callable $concrete) : $this`                                                        |
 | ghostwriter | (1)   | `factory(string $id, string $factory) : void` |
-| illuminate  |       | `bind(string $abstract, callable $concrete) : void |
+| illuminate  |       | `bind(string $abstract, callable $concrete) : void` |
 | joomla      |       | `set(string $key, callable $value) : $this` |
 | laminas     |       | - |
 | league      |       | ? |
@@ -589,7 +589,7 @@ Programmatically (imperatively?) sets one or more services into a container; gen
 7.  `symfony` does service configuration, not provision per se.
 
 8. `yii-di` splits provision into definition arrays and callable extenders
-    (post-construction modification logic); cf.
+    (post-instantiation modification logic); cf.
     https://github.com/yiisoft/di?tab=readme-ov-file#using-service-providers
 
 ## Creating the container itself
@@ -746,45 +746,39 @@ process.
 | yii-factory |             |            | x       |
 
 aura:
-    new: Instance (string $name) (TARGET_PARAMETER|PROPERTY)
-    get: Service (string $name, ?string $methodName = null) (TARGET_PARAMETER|PROPERTY)
-    plus others
+- new: Instance (string $name) (TARGET_PARAMETER|PROPERTY)
+- get: Service (string $name, ?string $methodName = null) (TARGET_PARAMETER|PROPERTY)
+- plus others
 
 illuminate:
-    bind is alias
-    tag is tag
-    singleton sets shared
-    no new, no get
-    lots of framework-specific attrs
+- bind is alias
+- tag is tag
+- singleton sets shared
+- no new, no get
+- lots of framework-specific attrs
 
 league:
-    new/get: Inject(string $id) (depends on if it's shared or not?) (TARGET_PARAM | REPEATABLE)
+- new/get: Inject(string $id) (depends on if it's shared or not?) (TARGET_PARAM | REPEATABLE)
 
 nette:
-    ???: Inject() (TARGET_PROPERTY)
+- ???: Inject() (TARGET_PROPERTY)
 
 phpdi
-    ??? Inject(string|array|null $name = null) Attribute::TARGET_PROPERTY | Attribute::TARGET_METHOD | Attribute::TARGET_PARAMETER
+- ??? Inject(string|array|null $name = null) Attribute::TARGET_PROPERTY | Attribute::TARGET_METHOD | Attribute::TARGET_PARAMETER
 
 symfony:
-    no new, no get
+- no new, no get
 
 tempest
-    Autowire
-    Decorator
-    Singleton
-    Inject() is on properties
-    no new, no get
-
-So New and Get attrs are ways of avoiding Factories (esp new) and ways of overriding aliases
-
-inject on constructor, property, setter, invokable method.
-
-need to determine targets
+- Autowire
+- Decorator
+- Singleton
+- Inject() is on properties
+- no new, no get
 
 ## Extended Construction
 
-Post-contruction modification of service instances, typically setter and property injection, but also decoration and generic method calls. These are often called "extenders."
+Post-instantiation modification of service instances, typically setter and property injection, but also decoration and generic method calls. These are often called "extenders."
 
 |             | signature | callable | notes |
 | ----------- | - | - | - |
@@ -795,7 +789,7 @@ Post-contruction modification of service instances, typically setter and propert
 | joomla      | extend($resourceName, callable $callable) | callable($object, Container) : object |  Extend a defined service Closure by wrapping the existing one with a new callable function.
 | laminas     | - | | |
 | league      | (1) |
-| mindplay    | ContaerinFctory::configure($name_or_func, $func_or_map = null, $map = []) |
+| mindplay    | ContainerFactory::configure($name_or_func, $func_or_map = null, $map = []) |
 | nette       | (2) |
 | phalcon     | - | | |
 | phpdi       | create()->method(), ->property() | - | operates on an _ObjectDefinition_ (3) |
@@ -813,7 +807,7 @@ Post-contruction modification of service instances, typically setter and propert
 4. `ray` looks non-programmatic (use attributes for setter injection, no property injection)
 5. `symfony` extends via ServiceDefinition calls (cf. <https://symfony.com/doc/current/service_container/definitions.html>)
 6. `tempest` discovers #[Decorator] attributes.
-7. `yii-di` offers setter and property injection, but only at construction-time ... ?
+7. `yii-di` offers setter and property injection, but only at instantiation-time ... ?
 
 * * *
 
@@ -830,22 +824,9 @@ Post-contruction modification of service instances, typically setter and propert
     - Serializing
 
 - Contextual binding (when class Foo wants Bar give Baz otherwise give Dib)
-  (may be addressable with attributes)
 
-- Post-constuction modification
+- Property injection
 
-    - Property injection
+- Setter injection
 
-    - Setter injection
-
-    - Extension
-
-    - Decoration/replacement
-
-- Definitions
-
-    - Builder object methods
-
-    - Array-based specifications
-
-    - Operate as resolver, or embedded in container, or elsewhere?
+- Array-based definitions

@@ -12,11 +12,17 @@ interpreted as described in [BCP 14][] ([RFC 2119][], [RFC 8174][]).
 
 This package defines the following interfaces:
 
-- [_IocContainer_][] affords obtaining service instances by name, whether as shared instances or new unshared instances.
+- [_IocContainer_][] affords obtaining services by name, whether as shared instances or new unshared instances.
 
-- [_IocServices_][] affords a registry  of service instances, factories, and aliases.
+- [_IocServices_][] affords a registry of service instances, builders, and aliases.
 
-- [_IocProvider_][] affords provision of service instances, factories, and aliases to an [_IocServices_][] instance.
+- [_IocServicesProvider_][] affords provision of service instances, builders, and aliases to an [_IocServices_][] instance.
+
+- [_IocServiceBuilder_][] affords building a service, including both instantiation and extended post-instantiation logic.
+
+- [_IocServiceResolver_][] affords service instantiation.
+
+- [_IocParameterResolver_][] affords obtaining an argument for a parameter.
 
 - [_IocContainerFactory_][] affords obtaining a new instance of [_IocContainer_][].
 
@@ -50,7 +56,7 @@ The Ioc-Interop standard is more expansive.
   which may do either or both depending on the implementation.
 
 - Ioc-Interop offers an interface to set/get/has/unset service instances,
-  factories, and aliases. PSR-11 offers no such interface.
+  builders, and aliases. PSR-11 offers no such interface.
 
 - Ioc-Interop is intended to contain only services (`object`). PSR-11
   is intended to contain anything (`mixed`).
@@ -75,16 +81,16 @@ order to retrieve other dependencies from it.
 ### Why does _IocContainer_ define `newService()` instead of `make()`, `create()`, or `build()` ?
 
 The researched projects use several different terms to indicate that a new
-service instance will be returned: `build` (2 projects), `create` (3), `get` (6),
+service will be returned: `build` (2 projects), `create` (3), `get` (6),
 `make` (3), and `new` (2).
 
 The terms `get` and `make` are ambiguous in the researched projects. They might:
 
-- create a new service instance every time;
+- create a new service every time;
 
-- return a shared service instance every time;
+- return a shared service every time;
 
-- create a new service instance the first time and return that same instance
+- create a new service the first time and return that same instance
   every time thereafter; or,
 
 - do some combination of the above, depending how the service was defined.
@@ -98,7 +104,7 @@ always returns a shared instance (after creating it if necessary).
 ### Why is _IocContainer_ separate from _IocServices_?
 
 Whereas _IocContainer_ is for *obtaining* instances, _IocServices_ is for
-*registering* the instances, factories, and aliases involved in producing the
+*registering* the instances, builders, and aliases involved in producing the
 services to be obtained.
 
 This separation allows for containers that are fully "open" by implementing
@@ -111,7 +117,7 @@ the sense that the services are encapsulated but not publicly modifiable.
 implies only a `new` method. Even if there are multiple steps to the factory
 process, they are not accessible as public methods.
 
-### Why does _IocProvider_ define `provideServices()` instead of `register()` ?
+### Why does _IocServicesProvider_ define `provideServices()` instead of `register()` ?
 
 The method name `register()` is by far the majority choice for service provider
 implementations. This standard breaks with that choice for consistency reasons.
@@ -123,7 +129,7 @@ interface should be a _Registrant_. Further, as with the other interfaces herein
 the word "service" should be incorporated into the method name. This leaves two
 choices:
 
-- `IocProvider::provideServices()` (closer to the majority class name)
+- `IocServicesProvider::provideServices()` (closer to the majority class name)
 - `IocRegistrant::registerServices()` (closer to the majority method name)
 
 Ioc-Interop opts in favor of honoring the class name, and modeling the method
@@ -134,8 +140,11 @@ name after it.
 [_Exception_]: https://php.net/Exception
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
-[_IocProvider_]: #iocprovider
+[_IocServicesProvider_]: #iocservicesprovider
 [_IocServices_]: #iocservices
+[_IocServiceBuilder_]: #iocservicebuilder
+[_IocServiceResolver_]: #iocserviceresolver
+[_IocParameterResolver_]: #iocattributeresolver
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocContainer_][] interface affords obtaining service instances by
+ * The [_IocContainer_][] interface affords obtaining services by
  * name, whether as shared instances or new unshared instances.
  *
  * - Directives:
@@ -63,8 +63,8 @@ interface IocContainer
      * - Notes:
      *
      *     - **Service instantiation logic is not specified.** Implementations
-     *       might use autowiring, configuration, factories, or some other means
-     *       to create the service instance. The creation logic might be part of
+     *       might use autowiring, configuration, builders, or some other means
+     *       to create the service. The creation logic might be part of
      *       the container, or it might be part of some other subsystem.
      *
      * @param ioc_service_name_string $serviceName
