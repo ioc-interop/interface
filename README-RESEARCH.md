@@ -809,6 +809,46 @@ Post-instantiation modification of service instances, typically setter and prope
 6. `tempest` discovers #[Decorator] attributes.
 7. `yii-di` offers setter and property injection, but only at instantiation-time ... ?
 
+## Programmatic Definitions
+
+Some projects offer a "definition" object for programmatic setting of aliases,
+factories, constructor arguments, non-constructor injections, etc.
+
+|             | Relevant Class/Interface  |
+| ----------- | ------------------------- |
+| aura        | - |
+| flightphp   | - |
+| ghostwriter | - |
+| illuminate  | - |
+| joomla      | - |
+| laminas     | (1) |
+| league      | _Definition_ |
+| nette       | _ServiceDefinition_ |
+| phalcon     | - |
+| phpdi       | _ObjectDefinition_ et al. |
+| pimple      | - |
+| ray         | - |
+| rdlowrey    | - |
+| symfony     | _Definition_ |
+| tempest     | - |
+| yii-di      | (2) |  (works by config file/arrays)
+| yii-factory | (3) |  (works by config file/arrays)
+
+1. `laminas` offers non-programmatic configuration by config files/arrays.
+2. `yii-di` offers non-programmatic configuration by config files/arrays.
+3. `yii-factory` offers non-programmatic configuration by config files/arrays.
+
+## Contextual binding
+
+aura
+- nothing formal? based on env in a way, "web app" vs "other app"
+
+ghostwriter
+- `bind(string $concrete, string $abstract, string $implementation):`
+- when $concrete needs $abstract give $implementation
+
+illuminate
+
 * * *
 
 ## Topics not analyzed
@@ -828,5 +868,3 @@ Post-instantiation modification of service instances, typically setter and prope
 - Property injection
 
 - Setter injection
-
-- Array-based definitions
