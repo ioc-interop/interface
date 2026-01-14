@@ -5,6 +5,9 @@ namespace IocInterop\Interface;
 
 /**
  * The [_IocServiceResolver_][] interface affords service instantiation.
+ *
+ * @phpstan-import-type ioc_service_name_string from IocTypeAliases
+ * @phpstan-import-type ioc_service_object from IocTypeAliases
  */
 interface IocServiceResolver
 {

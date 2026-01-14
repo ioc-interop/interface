@@ -92,7 +92,7 @@ interface IocServiceBuilder
      *     - **The `callable` type allows for a wide range of implementations.**
      *       Cf. the <https://php.net/callable> documentation for more.
      *
-     * @param ioc_service_extender_callable
+     * @param ioc_service_extender_callable $serviceExtender
      * @return $this
      */
     public function addServiceExtender(callable $serviceExtender) : self;
