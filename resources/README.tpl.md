@@ -130,10 +130,36 @@ the word "service" should be incorporated into the method name. This leaves two
 choices:
 
 - `IocServicesProvider::provideServices()` (closer to the majority class name)
-- `IocRegistrant::registerServices()` (closer to the majority method name)
+- `IocServicesRegistrant::registerServices()` (closer to the majority method name)
 
 Ioc-Interop opts in favor of honoring the class name, and modeling the method
 name after it.
+
+### What about property and setter injection?
+
+TBD: Supported indirectly as extenders. Suggest implementors
+add support as desired in their [_IocServiceBuilder_][] implementations.
+
+## What about "action", "method", or "invoker" injection?
+
+TBD: "Action" or "method" injection involves using a container to call a method
+(typically a controller action method) so that the container can injecting
+services to the typehinted parameters on that method. Implementors are
+encouraged to add their own implementations.
+
+## Why an _IocServiceBuilder_ at all?
+
+TBD: Is a place to collect all building logic: factory, autowiring, extenders.
+Also a starting point for implementors to add arguments, setter injection,
+property injection, etc. Could put these on IocServices but that expands the
+API too much.
+
+## Why _IocServiceBuilder_ and not _IocServiceDefinition_ ?
+
+TBD: "Definition" is the only name used in the projects, when such functionality
+is offered. Ioc-Interop breaks with this in favor of the more-formal design
+pattern name "Builder".
+
 
 * * *
 
