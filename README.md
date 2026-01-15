@@ -311,7 +311,9 @@ including both instantiation and extended post-instantiation logic.
     - Unsets all post-instantiation extenders for the service.
 
 - ```php
-  public function addServiceExtender(callable $serviceExtender) : $this;
+  public function addServiceExtender(
+      ioc_service_extender_callable $serviceExtender,
+  ) : $this;
   ```
     - Adds a single service extender to the builder.
 
@@ -493,6 +495,15 @@ names are different, and so are non-conflicting.
 _IocContainer_ acts a Service Locator only when it is used as a dependency in
 order to retrieve other dependencies from it.
 
+### Why does _IocContainer_ disallow non-object values?
+
+TBD: To maintain conceptual integrity and consistent expectations. Given that
+`getService()` returns a shared service, and `newService()` returns a new
+instance, what does it mean to "get" a shared string value or a "new" string
+value? How then to get non-object configuration values? Create config objects as services.
+How to inject non-object values as constructor args? Consider _IocParameterResolver_
+attributes.
+
 ### Why does _IocContainer_ define `newService()` instead of `make()`, `create()`, or `build()` ?
 
 The researched projects use several different terms to indicate that a new
@@ -545,10 +556,52 @@ the word "service" should be incorporated into the method name. This leaves two
 choices:
 
 - `IocServicesProvider::provideServices()` (closer to the majority class name)
-- `IocRegistrant::registerServices()` (closer to the majority method name)
+- `IocServicesRegistrant::registerServices()` (closer to the majority method name)
 
 Ioc-Interop opts in favor of honoring the class name, and modeling the method
 name after it.
+
+### What about property and setter injection?
+
+TBD: Supported indirectly as extenders. Suggest implementors
+add support as desired in their [_IocServiceBuilder_][] implementations.
+
+## What about "action", "method", or "invoker" injection?
+
+TBD: "Action" or "method" injection involves using a container to call a method
+(typically a controller action method) so that the container can injecting
+services to the typehinted parameters on that method. Implementors are
+encouraged to add their own implementations.
+
+## Why an _IocServiceBuilder_ at all?
+
+TBD: Is a place to collect all building logic: factory, autowiring, extenders.
+Also a starting point for implementors to add arguments, setter injection,
+property injection, etc. Could put these on IocServices but that expands the
+API too much.
+
+## Why _IocServiceBuilder_ and not _IocServiceDefinition_ ?
+
+TBD: "Definition" is the only name used in the projects, when such functionality
+is offered. Ioc-Interop breaks with this in favor of the more-formal design
+pattern name "Builder".
+
+## What about contextual or environmental binding?
+
+TBD: When two different classes need different implementations of the same
+interface. Relatively rare (only 2 projects). Another variation is that a class
+needs different implementations in different environemt (e.g. web vs cli vs test).
+Ioc-Interop finds little to standardize on as far as an API. Implementors are
+encouraged to implement _IocParameterResolver_ attributes to note the specific
+service to inject for a specific parameter.
+
+## What about setter and property injection?
+
+TBD: Property injection rare; setter injection less rare but introduces other
+problems (when/how to resolve arguments?). Ioc-Interop favors constructor
+injection as all projects support it. Implementors encouraged to add setter and
+property injection on _IocServiceBuilder_ implementations. Consumers may add
+service extenders for post-instantiation logic.
 
 * * *
 
@@ -559,7 +612,7 @@ name after it.
 [_IocServices_]: #iocservices
 [_IocServiceBuilder_]: #iocservicebuilder
 [_IocServiceResolver_]: #iocserviceresolver
-[_IocParameterResolver_]: #iocattributeresolver
+[_IocParameterResolver_]: #iocparameterresolver
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

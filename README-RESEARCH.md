@@ -823,48 +823,101 @@ factories, constructor arguments, non-constructor injections, etc.
 | joomla      | - |
 | laminas     | (1) |
 | league      | _Definition_ |
+| mindplay    | - |
 | nette       | _ServiceDefinition_ |
-| phalcon     | - |
+| phalcon     | (2) |
 | phpdi       | _ObjectDefinition_ et al. |
 | pimple      | - |
-| ray         | - |
+| ray         | _Bind_ |
 | rdlowrey    | - |
 | symfony     | _Definition_ |
 | tempest     | - |
-| yii-di      | (2) |  (works by config file/arrays)
-| yii-factory | (3) |  (works by config file/arrays)
+| yii-di      | (3) |
+| yii-factory | (4) |
 
 1. `laminas` offers non-programmatic configuration by config files/arrays.
-2. `yii-di` offers non-programmatic configuration by config files/arrays.
-3. `yii-factory` offers non-programmatic configuration by config files/arrays.
+2. `phalcon` offers non-programmatic configuration by config files/arrays.
+3. `yii-di` offers non-programmatic configuration by config files/arrays.
+4. `yii-factory` offers non-programmatic configuration by config files/arrays.
 
 ## Contextual binding
 
-aura
-- nothing formal? based on env in a way, "web app" vs "other app"
+Relatively rare:
 
-ghostwriter
-- `bind(string $concrete, string $abstract, string $implementation):`
-- when $concrete needs $abstract give $implementation
+- aura
+    - nothing formal? based on env in a way, "web app" vs "other app"
 
-illuminate
+- ghostwriter
+    - `bind(string $concrete, string $abstract, string $implementation):`
+    - "when $concrete needs $abstract give $implementation"
+
+- illuminate
+    - `when($concrete)->needs($abstract)->give($implementation)`
+
+## Setter Injection
+
+These projects offer explicit programmatic setter injection.
+
+|             | Setter Injection Signature |
+| ----------- | -------------------------- |
+| aura        | `$di->setters[$class][$method] = $value;`|
+| flightphp   | - |
+| ghostwriter | - |
+| illuminate  | - |
+| joomla      | - |
+| laminas     | - |
+| league      | `$definition->withMethodCall($method, $arguments)` |
+| mindplay    | - |
+| nette       | `$definition->addSetup($entity, $args)` |
+| phalcon     | - |
+| phpdi       | `$definition->method($method, ...$arguments)` |
+| pimple      | - |
+| ray         | `$injectionPoints->addMethod($method, $value)` |
+| rdlowrey    | - |
+| symfony     | `$definition->addMethodCall($method, $arguments, $returnsClone)` |
+| tempest     | - |
+| yii-di      | - |
+| yii-factory | - |
+
+Note that setter injection can be accomplished with any post-instantiation
+"extender" logic.
+
+## Property Injection
+
+These projects offer explicit programmatic property injection.
+
+|             | Property Injection Signature |
+| ----------- | ---------------------------- |
+| aura        | -|
+| flightphp   | - |
+| ghostwriter | - |
+| illuminate  | - |
+| joomla      | - |
+| laminas     | - |
+| league      | - |
+| mindplay    | - |
+| nette       | - |
+| phalcon     | - |
+| phpdi       | `$definition->property($property, $value)` |
+| pimple      | - |
+| ray         | - |
+| rdlowrey    | - |
+| symfony     | `$definition->setProperry($name, $value)` |
+| tempest     | - |
+| yii-di      | - |
+| yii-factory | - |
+
+Note that property injection can be accomplished with any post-instantiation
+"extender" logic.
 
 * * *
 
 ## Topics not analyzed
 
-- Container ...
+- Compiling
 
-    - Compiling
+- Compositing (aka "delegation" to a hierarchy of other containers)
 
-    - Compositing (aka "delegation" to a hierarchy of other containers)
+- Serializing
 
-    - Invokables (inject arguments on function/method/callable, then call & return)
-
-    - Serializing
-
-- Contextual binding (when class Foo wants Bar give Baz otherwise give Dib)
-
-- Property injection
-
-- Setter injection
+- Invokables (inject arguments on function/method/callable, then call & return)
