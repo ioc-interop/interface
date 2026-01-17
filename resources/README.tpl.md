@@ -186,6 +186,14 @@ injection as all projects support it. Implementors encouraged to add setter and
 property injection on _IocServiceBuilder_ implementations. Consumers may add
 service extenders for post-instantiation logic.
 
+## What about lifetime scopes?
+
+TBD: Ioc-Interop asserts that all services should be shared (aka "singleton" or
+"request-scoped") services. [PHP-DI](https://github.com/PHP-DI/PHP-DI/blob/master/doc/scopes.md)
+outlines the case. Consumers needing transient, prototype, or new-every-time
+service instances are encouraged to depend on shared factory services instead,
+or to build custom factories that call `newService()` when a new instance is
+required.
 
 * * *
 

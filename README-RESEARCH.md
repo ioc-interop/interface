@@ -623,27 +623,28 @@ Very few of the researched projects offer a factory or builder for the container
 ## Service aliases
 
 When an abstract or interface service name is requested, alias it to a concrete
-service instead.
+service instead. Some projects allow aliases to be aliased recursively, though
+they may not track circular aliases.
 
-|             | Method, Property, or Notation |
-| ----------- | ----------------------------- |
-| aura        | `$di->types[Abstract::class] = $di->lazyGet(Concrete::class);` |
-| flightphp   | `set(Abstract::class, Concrete::class) : void` |
-| ghostwriter | `alias(Abstract::class, Concrete::class) : void` |
-| illuminate  | `alias(Abstract::class, Concrete::class) : void` |
-| joomla      | `alias(Abstract::class, Concrete::class) : $this` |
-| laminas     | (1) |
-| league      | `add(Abstract::class, Concrete::class) : void` |
-| mindplay    | `alias(string $new_name, string $ref_name) : void` (3) |
-| nette       | `addAlias(Abstract::class, Concrete::class) : void` |
-| phalcon     | - |
-| phpdi       | `[Abstract::class => DI\get(Concrete::class)]` (2) |
-| pimple      | `$pimple[Abstract::class] = fn($c) => return $c[Concrete::class];` |
-| ray         | - |
-| rdlowrey    | `alias(Abstract::class, Concrete::class) : $this` |
-| symfony     | `alias(Abstract::class, Concrete::class) : AliasConfigurator`|
-| tempest     | - |
-| yii-di      | (4) |
+|             | Method, Property, or Notation                                      | Recursive? |
+| ----------- | ------------------------------------------------------------------ | ---------- |
+| aura        | `$di->types[Abstract::class] = $di->lazyGet(Concrete::class);`     | x          |
+| flightphp   | `set(Abstract::class, Concrete::class) : void`                     | ?          |
+| ghostwriter | `alias(Abstract::class, Concrete::class) : void`                   | x          |
+| illuminate  | `alias(Abstract::class, Concrete::class) : void`                   | x          |
+| joomla      | `alias(Abstract::class, Concrete::class) : $this`                  | -          |
+| laminas     | (1)                                                                | -          |
+| league      | `add(Abstract::class, Concrete::class) : void`                     | x          |
+| mindplay    | `alias(string $new_name, string $ref_name) : void` (3)             | x          |
+| nette       | `addAlias(Abstract::class, Concrete::class) : void`                | -          |
+| phalcon     | -                                                                  | -          |
+| phpdi       | `[Abstract::class => DI\get(Concrete::class)]` (2)                 | x          |
+| pimple      | `$pimple[Abstract::class] = fn($c) => return $c[Concrete::class];` | x          |
+| ray         | -                                                                  | -          |
+| rdlowrey    | `alias(Abstract::class, Concrete::class) : $this`                  | -          |
+| symfony     | `alias(Abstract::class, Concrete::class) : AliasConfigurator`      | x          |
+| tempest     | -                                                                  | -          |
+| yii-di      | (4)                                                                | x          |
 
 1. `laminas` aliases abstract to concrete types via configuration, not a method.
 
@@ -788,9 +789,9 @@ Post-instantiation modification of service instances, typically setter and prope
 | illuminate  | extend($abstract, Closure $closure) : void | callable(object, Container) : object | |
 | joomla      | extend($resourceName, callable $callable) | callable($object, Container) : object |  Extend a defined service Closure by wrapping the existing one with a new callable function.
 | laminas     | - | | |
-| league      | (1) |
+| league      | (1) | | |
 | mindplay    | ContainerFactory::configure($name_or_func, $func_or_map = null, $map = []) |
-| nette       | (2) |
+| nette       | (2) | | |
 | phalcon     | - | | |
 | phpdi       | create()->method(), ->property() | - | operates on an _ObjectDefinition_ (3) |
 | pimple      | extend($id, $callable) | callable(object, Container) : object  |
@@ -888,7 +889,7 @@ These projects offer explicit programmatic property injection.
 
 |             | Property Injection Signature |
 | ----------- | ---------------------------- |
-| aura        | -|
+| aura        | - |
 | flightphp   | - |
 | ghostwriter | - |
 | illuminate  | - |
@@ -902,7 +903,7 @@ These projects offer explicit programmatic property injection.
 | pimple      | - |
 | ray         | - |
 | rdlowrey    | - |
-| symfony     | `$definition->setProperry($name, $value)` |
+| symfony     | `$definition->setProperty($name, $value)` |
 | tempest     | - |
 | yii-di      | - |
 | yii-factory | - |
