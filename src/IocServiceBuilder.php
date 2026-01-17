@@ -51,6 +51,29 @@ interface IocServiceBuilder
     public function setServiceFactory(callable $serviceFactory) : self;
 
     /**
+     * Invokes the service factory callable that instantiates the service.
+     *
+     * - Directives:
+     *
+     *     - **TBD** If no factory, MUST throw.
+     *
+     *     - **TBD** If $serviceArgs not empty, and factory cannot receive
+     *       $serviceArgs as 2nd parameter, MUST throw.
+     *
+     * - Notes:
+     *
+     *     - **TBD** Only check second arg; IocContainer is assumed, but args
+     *       param may not be present, and should warn when newServiceWithArgs()
+     *       cannot honor the args.
+     *
+     * @param mixed[] $serviceArgs
+     */
+    public function runServiceFactory(
+        IocContainer $ioc,
+        array $serviceArgs = []
+    ) : object;
+
+    /**
      * Unsets the factory that instantiates the service.
      *
      * @return $this
@@ -104,6 +127,11 @@ interface IocServiceBuilder
      *
      *     - **TBD** Instantiate (by factory or resolver) then apply extenders
      *       then return.
+     *
+     * @param mixed[] $serviceArgs
      */
-    public function buildService(IocContainer $ioc) : object;
+    public function buildService(
+        IocContainer $ioc,
+        array $serviceArgs = [],
+    ) : object;
 }

@@ -7,11 +7,6 @@ namespace IocInterop\Interface;
  * The [_IocServices_][] interface affords a registry of service instances,
  * builders, and aliases.
  *
- * - Directives:
- *
- *     - Implementations MUST NOT convert any `$serviceName` argument to its
- *       alias.
- *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
  */

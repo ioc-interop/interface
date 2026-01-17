@@ -15,9 +15,10 @@ namespace IocInterop\Interface;
  *       etc.
  *
  * - ```
- *   ioc_service_factory_callable callable(IocContainer):object
+ *   ioc_service_factory_callable callable(IocContainer):object|callable(IocContainer,mixed[]=):object
  *   ```
- *     - A `callable` for service instantiation logic.
+ *     - A `callable` for service instantiation logic, with or without a
+ *       parameter for optional override constructor arguments.
  *
  * - ```
  *   ioc_service_name_string class-string<T>|string
@@ -30,9 +31,13 @@ namespace IocInterop\Interface;
  *     - The service `object` for a given service name.
  *
  * @template T of object
+ *
  * @phpstan-type ioc_service_extender_callable callable(IocContainer, T):T
- * @phpstan-type ioc_service_factory_callable callable(IocContainer):object
+ *
+ * @phpstan-type ioc_service_factory_callable callable(IocContainer):object|callable(IocContainer,mixed[]=):object
+ *
  * @phpstan-type ioc_service_name_string class-string<T>|string
+ *
  * @phpstan-type ioc_service_object ($serviceName is class-string<T> ? T : object)
  */
 interface IocTypeAliases

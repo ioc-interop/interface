@@ -35,33 +35,36 @@ This package defines the following interfaces:
 The [_IocContainer_][] interface affords obtaining services by
 name, whether as shared instances or new unshared instances.
 
-- Directives:
-
-    - Implementations MUST convert each `$serviceName` argument to its alias, if
-      an alias exists for that `$serviceName`.
-
 #### _IocContainer_ Methods
 
 - ```php
   public function hasService(ioc_service_name_string $serviceName) : bool;
   ```
     - Is the container capable of returning a shared instance of the
-    `$serviceName`?
+    service?
+
+    - Directives:
+
+        - Implementations MUST convert the `$serviceName` argument to its
+          alias, if an alias exists for that `$serviceName`.
 
 - ```php
   public function getService(
       ioc_service_name_string $serviceName,
   ) : ioc_service_object;
   ```
-    - Returns a shared instance of the `$serviceName`, instantiating it if
+    - Returns a shared instance of a service, instantiating it if
     necessary.
 
     - Directives:
 
-        - Implementations MUST throw [_IocThrowable_][] if the
-          container cannot return a shared instance of the `$serviceName`.
+        - Implementations MUST convert the `$serviceName` argument to its
+          alias, if an alias exists for that `$serviceName`.
 
-        - Implementations MUST return the same instance of the `$serviceName`
+        - Implementations MUST throw [_IocThrowable_][] if the
+          container cannot return a shared instance of the service.
+
+        - Implementations MUST return the same instance of the service
           service each time this method is called.
 
     - Notes:
@@ -74,17 +77,21 @@ name, whether as shared instances or new unshared instances.
 - ```php
   public function newService(
       ioc_service_name_string $serviceName,
+      mixed[] $serviceArgs = [],
   ) : ioc_service_object;
   ```
-    - Returns a new instance of the `$serviceName`.
+    - Returns a new instance of the service.
 
     - Directives:
 
+        - Implementations MUST convert the `$serviceName` argument to its
+          alias, if an alias exists for that `$serviceName`.
+
         - Implementations MUST throw [_IocThrowable_][] if the
-          container cannot return a new instance of the `$serviceName`.
+          container cannot return a new instance of the service.
 
         - Implementations MUST return a different instance of the
-          `$serviceName` each time this method is called.
+          service each time this method is called.
 
     - Notes:
 
@@ -97,11 +104,6 @@ name, whether as shared instances or new unshared instances.
 
 The [_IocServices_][] interface affords a registry of service instances,
 builders, and aliases.
-
-- Directives:
-
-    - Implementations MUST NOT convert any `$serviceName` argument to its
-      alias.
 
 #### _IocServices_ Methods
 
@@ -225,8 +227,8 @@ builders, and aliases.
 
 ### _IocServicesProvider_
 
-The [_IocServicesProvider_][] interface affords provision of service instances,
-builders, and aliases to an [_IocServices_][] instance.
+The [_IocServicesProvider_][] interface affords provision of service
+instances, builders, and aliases to an [_IocServices_][] instance.
 
 #### _IocServicesProvider_ Methods
 
@@ -238,8 +240,8 @@ builders, and aliases to an [_IocServices_][] instance.
     - Notes:
 
         - **Provision includes a wide range of activity.** The implementation
-          can set, unset, replace, etc. the instances, builders, and aliases
-          in the `$services`.
+          can set, unset, replace, modify, etc. the instances, builders, and
+          aliases in the `$services`.
 
 ### _IocServiceBuilder_
 
@@ -284,6 +286,27 @@ including both instantiation and extended post-instantiation logic.
           Cf. the <https://php.net/callable> documentation for more.
 
 - ```php
+  public function runServiceFactory(
+      IocContainer $ioc,
+      mixed[] $serviceArgs = [],
+  ) : object;
+  ```
+    - Invokes the service factory callable that instantiates the service.
+
+    - Directives:
+
+        - **TBD** If no factory, MUST throw.
+
+        - **TBD** If $serviceArgs not empty, and factory cannot receive
+          $serviceArgs as 2nd parameter, MUST throw.
+
+    - Notes:
+
+        - **TBD** Only check second arg; IocContainer is assumed, but args
+          param may not be present, and should warn when newServiceWithArgs()
+          cannot honor the args.
+
+- ```php
   public function unsetServiceFactory() : $this;
   ```
     - Unsets the factory that instantiates the service.
@@ -323,7 +346,10 @@ including both instantiation and extended post-instantiation logic.
           Cf. the <https://php.net/callable> documentation for more.
 
 - ```php
-  public function buildService(IocContainer $ioc) : object;
+  public function buildService(
+      IocContainer $ioc,
+      mixed[] $serviceArgs = [],
+  ) : object;
   ```
     - Creates and returns a new instance of the service.
 
@@ -436,8 +462,10 @@ to aid static analysis.
 
 - ```
   ioc_service_factory_callable callable(IocContainer):object
+      |callable(IocContainer,mixed[]=):object
   ```
-    - A `callable` for service instantiation logic.
+    - A `callable` for service instantiation logic, with or without a
+      parameter for optional override constructor arguments.
 
 - ```
   ioc_service_name_string class-string<T>|string
@@ -551,9 +579,9 @@ implementations. This standard breaks with that choice for consistency reasons.
 Ioc-Interop opines that, unless the result is outright barbarous,
 interface names and method names should mimic each other. Given a _Provider_
 interface, its methods should `provide()`; given a `register()` method, its
-interface should be a _Registrant_. Further, as with the other interfaces herein,
-the word "service" should be incorporated into the method name. This leaves two
-choices:
+interface should be a _Registry_ or _Registrant_. Further, as with the other
+interfaces herein, the word "service" should be incorporated into the method
+name. This leaves few choices:
 
 - `IocServicesProvider::provideServices()` (closer to the majority class name)
 - `IocServicesRegistrant::registerServices()` (closer to the majority method name)
@@ -563,8 +591,8 @@ name after it.
 
 ### What about property and setter injection?
 
-TBD: Supported indirectly as extenders. Suggest implementors
-add support as desired in their [_IocServiceBuilder_][] implementations.
+TBD: Supported indirectly as extenders. Implementors may add support as desired,
+perhaps in their [_IocServiceBuilder_][] implementations.
 
 ## What about "action", "method", or "invoker" injection?
 
@@ -602,6 +630,15 @@ problems (when/how to resolve arguments?). Ioc-Interop favors constructor
 injection as all projects support it. Implementors encouraged to add setter and
 property injection on _IocServiceBuilder_ implementations. Consumers may add
 service extenders for post-instantiation logic.
+
+## What about lifetime scopes?
+
+TBD: Ioc-Interop asserts that all services should be shared (aka "singleton" or
+"request-scoped") services. [PHP-DI](https://github.com/PHP-DI/PHP-DI/blob/master/doc/scopes.md)
+outlines the case. Consumers needing transient, prototype, or new-every-time
+service instances are encouraged to depend on shared factory services instead,
+or to build custom factories that call `newService()` when a new instance is
+required.
 
 * * *
 
