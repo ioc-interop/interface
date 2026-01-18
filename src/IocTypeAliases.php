@@ -34,7 +34,7 @@ namespace IocInterop\Interface;
  *
  * @phpstan-type ioc_service_extender_callable callable(IocContainer, T):T
  *
- * @phpstan-type ioc_service_factory_callable callable(IocContainer):object|callable(IocContainer,mixed[]=):object
+ * @phpstan-type ioc_service_factory_callable callable(IocContainer,mixed[]=):object
  *
  * @phpstan-type ioc_service_name_string class-string<T>|string
  *

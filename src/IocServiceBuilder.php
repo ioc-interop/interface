@@ -13,16 +13,6 @@ namespace IocInterop\Interface;
 interface IocServiceBuilder
 {
     /**
-     * Is the service buildable?
-     *
-     * - Notes:
-     *
-     *     - **TBD** Does it have a factory, or is it otherwise resolvable.
-     *
-     */
-    public function isServiceBuildable() : bool;
-
-    /**
      * Is there a factory that instantiates the service?
      */
     public function hasServiceFactory() : bool;
