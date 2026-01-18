@@ -20,7 +20,7 @@ This package defines the following interfaces:
 
 - [_IocServiceBuilder_][] affords building a service, including both instantiation and extended post-instantiation logic.
 
-- [_IocServiceResolver_][] affords service instantiation.
+- [_IocClassResolver_][] affords service instantiation.
 
 - [_IocParameterResolver_][] affords obtaining an argument for a parameter.
 
@@ -203,7 +203,7 @@ required.
 [_IocServicesProvider_]: #iocservicesprovider
 [_IocServices_]: #iocservices
 [_IocServiceBuilder_]: #iocservicebuilder
-[_IocServiceResolver_]: #iocserviceresolver
+[_IocClassResolver_]: #iocserviceresolver
 [_IocParameterResolver_]: #iocparameterresolver
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases

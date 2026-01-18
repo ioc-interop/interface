@@ -13,7 +13,7 @@ namespace IocInterop\Interface;
  *
  *     - **TBD** Prime by setting an instance of [_IocContainer_][]::class.
  *
- *     - **TBD** Prime by setting an instance of [_IocServiceResolver_][]::class.
+ *     - **TBD** Prime by setting an instance of [_IocClassResolver_][]::class.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
@@ -35,7 +35,7 @@ interface IocContainer
      *       and `getServiceBuilder($serviceName)->hasServiceFactory()`.
      *
      *     - **TBD** Otherwise, MUST return `true` if
-     *         `getService(IocServiceResolver::class)->isServiceResolvable($serviceName)`.
+     *         `getService(IocClassResolver::class)->isServiceResolvable($serviceName)`.
      *
      * @param ioc_service_name_string $serviceName
      */

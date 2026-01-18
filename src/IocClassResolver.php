@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocServiceResolver_][] interface affords service instantiation.
+ * The [_IocClassResolver_][] interface affords service instantiation.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
  */
-interface IocServiceResolver
+interface IocClassResolver
 {
     /**
      * Is the service resolvable?
@@ -21,9 +21,9 @@ interface IocServiceResolver
      *
      *     - **TBD** Take the name as given, do not convert to alias.
      *
-     * @param ioc_service_name_string $serviceName
+     * @param string $class
      */
-    public function isServiceResolvable(string $serviceName) : bool;
+    public function isServiceResolvable(string $class) : bool;
 
     /**
      * Given an [_IocContainer_][] to locate service dependencies, instantiates
@@ -38,13 +38,14 @@ interface IocServiceResolver
      *
      *     - **TBD** Autowiring, attributes, defaults, etc.
      *
-     * @param ioc_service_name_string $serviceName
-     * @param mixed[] $serviceArgs
-     * @return ioc_service_object
+     * @template T of object
+     * @param string $class
+     * @param mixed[] $args
+     * @return ($class is class-string<T> ? T : object)
      */
     public function resolveService(
         IocContainer $ioc,
-        string $serviceName,
-        array $serviceArgs = [],
+        string $class,
+        array $args = [],
     ) : object;
 }

@@ -20,7 +20,7 @@ This package defines the following interfaces:
 
 - [_IocServiceBuilder_][] affords building a service, including both instantiation and extended post-instantiation logic.
 
-- [_IocServiceResolver_][] affords service instantiation.
+- [_IocClassResolver_][] affords service instantiation.
 
 - [_IocParameterResolver_][] affords obtaining an argument for a parameter.
 
@@ -35,6 +35,14 @@ This package defines the following interfaces:
 The [_IocContainer_][] interface affords obtaining services by
 name, whether as shared instances or new unshared instances.
 
+- Notes:
+
+    - **TBD** Construct with, or extend, [_IocServices_][].
+
+    - **TBD** Prime by setting an instance of [_IocContainer_][]::class.
+
+    - **TBD** Prime by setting an instance of [_IocClassResolver_][]::class.
+
 #### _IocContainer_ Methods
 
 - ```php
@@ -47,6 +55,14 @@ name, whether as shared instances or new unshared instances.
 
         - Implementations MUST convert the `$serviceName` argument to its
           alias, if an alias exists for that `$serviceName`.
+
+        - **TBD** MUST return `true` if `hasServiceInstance($serviceName)`.
+
+        - **TBD** Otherwise, MUST return `true` if `hasServiceBuilder($serviceName)`
+          and `getServiceBuilder($serviceName)->hasServiceFactory()`.
+
+        - **TBD** Otherwise, MUST return `true` if
+            `getService(IocClassResolver::class)->isServiceResolvable($serviceName)`.
 
 - ```php
   public function getService(
@@ -251,15 +267,6 @@ including both instantiation and extended post-instantiation logic.
 #### _IocServiceBuilder_ Methods
 
 - ```php
-  public function isServiceBuildable() : bool;
-  ```
-    - Is the service buildable?
-
-    - Notes:
-
-        - **TBD** Does it have a factory, or is it otherwise resolvable.
-
-- ```php
   public function hasServiceFactory() : bool;
   ```
     - Is there a factory that instantiates the service?
@@ -358,16 +365,14 @@ including both instantiation and extended post-instantiation logic.
         - **TBD** Instantiate (by factory or resolver) then apply extenders
           then return.
 
-### _IocServiceResolver_
+### _IocClassResolver_
 
-The [_IocServiceResolver_][] interface affords service instantiation.
+The [_IocClassResolver_][] interface affords service instantiation.
 
-#### _IocServiceResolver_ Methods
+#### _IocClassResolver_ Methods
 
 - ```php
-  public function isServiceResolvable(
-      ioc_service_name_string $serviceName,
-  ) : bool;
+  public function isServiceResolvable(string $class) : bool;
   ```
     - Is the service resolvable?
 
@@ -381,9 +386,9 @@ The [_IocServiceResolver_][] interface affords service instantiation.
 - ```php
   public function resolveService(
       IocContainer $ioc,
-      ioc_service_name_string $serviceName,
-      mixed[] $serviceArgs = [],
-  ) : ioc_service_object;
+      string $class,
+      mixed[] $args = [],
+  ) : ($class is class-string<T> ? T
   ```
     - Given an [_IocContainer_][] to locate service dependencies, instantiates
     and returns the `$serviceName` with `$serviceArgs` constructor argument
@@ -461,8 +466,7 @@ to aid static analysis.
       etc.
 
 - ```
-  ioc_service_factory_callable callable(IocContainer):object
-      |callable(IocContainer,mixed[]=):object
+  ioc_service_factory_callable callable(IocContainer):object|callable(IocContainer,mixed[]=):object
   ```
     - A `callable` for service instantiation logic, with or without a
       parameter for optional override constructor arguments.
@@ -648,7 +652,7 @@ required.
 [_IocServicesProvider_]: #iocservicesprovider
 [_IocServices_]: #iocservices
 [_IocServiceBuilder_]: #iocservicebuilder
-[_IocServiceResolver_]: #iocserviceresolver
+[_IocClassResolver_]: #iocserviceresolver
 [_IocParameterResolver_]: #iocparameterresolver
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
