@@ -1,8 +1,9 @@
 # Ioc-Interop Standard Interface Package
 
-This package provides interoperable interfaces for inversion-of-control
-(IOC) container functionality. It reflects, refines, and reconciles the common
-practices identified within [several pre-existing projects][README-RESEARCH.md].
+Ioc-Interop provides an interoperable package of standard interfaces for
+inversion-of-control (IOC) container functionality. It reflects, refines, and
+reconciles the common practices identified within
+[several pre-existing projects][README-RESEARCH.md].
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be
@@ -205,6 +206,7 @@ required.
 [_IocServiceBuilder_]: #iocservicebuilder
 [_IocClassResolver_]: #iocserviceresolver
 [_IocParameterResolver_]: #iocparameterresolver
+[_IocParametersResolver_]: #iocparametersresolver
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

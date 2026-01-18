@@ -1,8 +1,9 @@
 # Ioc-Interop Standard Interface Package
 
-This package provides interoperable interfaces for inversion-of-control
-(IOC) container functionality. It reflects, refines, and reconciles the common
-practices identified within [several pre-existing projects][README-RESEARCH.md].
+Ioc-Interop provides an interoperable package of standard interfaces for
+inversion-of-control (IOC) container functionality. It reflects, refines, and
+reconciles the common practices identified within
+[several pre-existing projects][README-RESEARCH.md].
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be
@@ -35,13 +36,29 @@ This package defines the following interfaces:
 The [_IocContainer_][] interface affords obtaining services by
 name, whether as shared instances or new unshared instances.
 
+- Directives:
+
+    - Implementations MUST retain an instance of the container itself under
+      a `$serviceName` of `IocContainer::class`.
+
 - Notes:
 
-    - **TBD** Construct with, or extend, [_IocServices_][].
+    - **This interface does not afford service registration.** The container
+      will need to obtain services from [_IocServices_][] somehow:
 
-    - **TBD** Prime by setting an instance of [_IocContainer_][]::class.
+        - Some implementors will prefer an "open" approach, where the
+          services are set and modified directly on the container
+          itself, in which case implementing both [_IocContainer_][] and
+          [_IocServices_][], or a container implementation extending a
+          services implementation, is reasonable.
 
-    - **TBD** Prime by setting an instance of [_IocClassResolver_][]::class.
+        - Other implementors will prefer a "closed" approach, where an
+          [_IocServices_][] implementation is encapsulated but not exposed by
+          an [_IocContainer_][] implementation.
+
+    - **Keep the container itself as a service.** This allows factory
+      and builder services to depend on the container; it may be easiest
+      to do so as part of `__construct()`.
 
 #### _IocContainer_ Methods
 
@@ -56,13 +73,15 @@ name, whether as shared instances or new unshared instances.
         - Implementations MUST convert the `$serviceName` argument to its
           alias, if an alias exists for that `$serviceName`.
 
-        - **TBD** MUST return `true` if `hasServiceInstance($serviceName)`.
+        - Implementations MUST return `true` if ...
 
-        - **TBD** Otherwise, MUST return `true` if `hasServiceBuilder($serviceName)`
-          and `getServiceBuilder($serviceName)->hasServiceFactory()`.
+            - the container has access to a shared instance of
+              `$serviceName`; or,
 
-        - **TBD** Otherwise, MUST return `true` if
-            `getService(IocClassResolver::class)->isServiceResolvable($serviceName)`.
+            - the container has access to a service builder for
+              `$serviceName` that has a service factory; or,
+
+            - the `$serviceName` is an instantiable class.
 
 - ```php
   public function getService(
@@ -111,15 +130,19 @@ name, whether as shared instances or new unshared instances.
 
     - Notes:
 
-        - **Service instantiation logic is not specified.** Implementations
-          might use autowiring, configuration, builders, or some other means
-          to create the service. The creation logic might be part of
-          the container, or it might be part of some other subsystem.
+        - **TBD** Typically via a service builder.
+
+        - **TBD** Circular tracking.
 
 ### _IocServices_
 
 The [_IocServices_][] interface affords a registry of service instances,
 builders, and aliases.
+
+- Notes:
+
+    - **TBD** Prime the implementation with an [_IocClassResolver_][]
+      instance.
 
 #### _IocServices_ Methods
 
@@ -159,11 +182,6 @@ builders, and aliases.
   public function hasServiceBuilder(ioc_service_name_string $serviceName) : bool;
   ```
     - Has an [_IocServiceBuilder_][] for the `$serviceName` been set?
-
-    - Notes:
-
-        - **TBD** May not have much meaning since getServiceBuilder() always
-          returns an instance.
 
 - ```php
   public function getServiceBuilder(
@@ -217,6 +235,12 @@ builders, and aliases.
         - Implementations MUST throw [_IocThrowable_][] an alias for the
           `$serviceName` is not available.
 
+        - **TBD** Recursive resolution.
+
+    - Notes:
+
+        - **TBD** Rescursive aliases are allowed.
+
 - ```php
   public function setServiceAlias(
       ioc_service_name_string $serviceName,
@@ -227,14 +251,11 @@ builders, and aliases.
 
     - Directives:
 
-        - Implementations MUST throw [_IocThrowable_][] if the
-          `$serviceAlias` itself is aliased.
+        - **TBD** Circular tracking.
 
     - Notes:
 
-        - **Only one level of aliasing is allowed.** An alias may not point
-          to another alias; this is to prevent the possibillity of infinite
-          recursion.
+        - **TBD** Rescursive aliases are allowed.
 
 - ```php
   public function unsetServiceAlias(ioc_service_name_string $serviceName) : void;
@@ -367,66 +388,123 @@ including both instantiation and extended post-instantiation logic.
 
 ### _IocClassResolver_
 
-The [_IocClassResolver_][] interface affords service instantiation.
+The [_IocClassResolver_][] interface affords resolving a class name to a new
+instance of that class.
 
 #### _IocClassResolver_ Methods
 
 - ```php
-  public function isServiceResolvable(string $class) : bool;
+  public function isClassResolvable(string $class) : bool;
   ```
-    - Is the service resolvable?
-
-    - Notes:
-
-        - **TBD** Is `$serviceName` an existing and instantiable class?
-          (Might use reflection.)
-
-        - **TBD** Take the name as given, do not convert to alias.
+    - Does the `$class` exist, and is it instantiable?
 
 - ```php
-  public function resolveService(
-      IocContainer $ioc,
+  public function resolveClass(
+      IocInterop\Interface\IocContainer $ioc,
       string $class,
-      mixed[] $args = [],
+      mixed[] $arguments = [],
   ) : ($class is class-string<T> ? T
   ```
-    - Given an [_IocContainer_][] to locate service dependencies, instantiates
-    and returns the `$serviceName` with `$serviceArgs` constructor argument
-    overrides.
+    - Given an [_IocContainer_][] to locate constructor dependencies,
+    returns a new instance of the `$class` with `$arguments` constructor
+    argument overrides.
+
+    - Directives:
+
+        - Implementations MUST support constructor injection using logic
+          equivalent to that specified by [_IocParametersResolver_][].
+
+        - Implementations MAY support other forms of injection, such as
+          setter injection, property injection, and so on.
+
+        - Implementations MUST throw [_IocThrowable_][] if the `$class`
+          cannot be resolved.
+
+### _IocParametersResolver_
+
+The [_IocParametersResolver_][] interface affords resolving an array of
+parameters to an array of named arguments.
+
+#### _IocParametersResolver_ Methods
+
+- ```php
+  public function resolveParameters(
+      IocInterop\Interface\IocContainer $ioc,
+      ReflectionParameter[] $parameters,
+      mixed[] $arguments = [],
+  ) : mixed[];
+  ```
+    - Resolves an array of parameters to an array of named parameter arguments,
+    allowing for an array of override arguments.
+
+    - Directives:
+
+        - Implementations MUST NOT attempt to resolve parameters that already
+          exist by name in the `$arguments` array keys.
+
+        - When resolving a parameter, implementations MUST do so using logic
+          equivalent to that specified by [_IocParameterResolver_][].
+
+        - Implementations MUST return an array of arguments keyed by the
+          parameter names.
 
     - Notes:
 
-        - **TBD** Throw if `! isServiceResolvable($serviceName)`.
-
-        - **TBD** Take the name as given, do not convert to alias.
-
-        - **TBD** Autowiring, attributes, defaults, etc.
+        - **Do not replace existing `$arguments`.** If an argument has
+          already been given for a parameter name, there is no need to
+          resolve the related parameter.
 
 ### _IocParameterResolver_
 
-The [_IocParameterResolver_][] interface affords obtaining an argument for a
-parameter.
+The [_IocParameterResolver_][] interface affords resolving a parameter to an
+argument value.
+
+- Directives:
+
+    - Implementations MUST resolve parameters in this order:
+
+        - If the parameter has an [_Attribute_][] that implements
+          [_IocParameterResolver_][], implementations MUST resolve the
+          parameter using that attribute.
+
+        - Otherwise, if the parameter type is a [_ReflectionNamedType_][],
+          and the container has a service for that type, implementations MUST
+          resolve the parameter to that service.
+
+        - Otherwise, implementations MAY attempt to resolve the parameter
+          using implementation-specific logic; such logic is expressly not
+          defined herein.
+
+        - Otherwise, if the parameter has a default value, implementations
+          MUST resolve the parameter to that value.
+
+    - Implementations MUST throw [_IocThrowable_][] if the parameter cannot
+      be resolved.
 
 - Notes:
 
-    - **TBD** Have attribute implement this, then reflection logic can call
-      `newInstance()->resolveParameter($ioc, $parameter)` to get back attribute value.
-      E.g. `#[Inject(Foo::class)]` on a constructor parameter for a resolver
-      to handle, or on a property for a builder to handle, etc.
+    - **This interface can be implemented as an attribute.** Doing so allows
+      implementors to define custom resolution approaches for consumers to
+      apply to specific parameters. For example, implementors may declare a
+      `#[GetEnv($name)]` attribute to resolve the parameter to an environment
+      value.
 
 #### _IocParameterResolver_ Methods
 
 - ```php
   public function resolveParameter(
-      IocContainer $ioc,
+      IocInterop\Interface\IocContainer $ioc,
       ReflectionParameter $parameter,
   ) : mixed;
   ```
-    - - Notes:
+    - Resolves the parameter to an argument value.
 
-        - **TBD** Mixed, not object, as some attributes may be used for
-          resolving non-object values, e.g. by pulling a container service
-          and returning a value from it.
+    - Notes:
+
+        - **The return is `mixed`.** The resolved value might be anything at
+          at all. This allows (e.g.) attribute implementations to obtain a
+          service from the container, and then obtain a value from that
+          service.
 
 ### _IocContainerFactory_
 
@@ -654,6 +732,7 @@ required.
 [_IocServiceBuilder_]: #iocservicebuilder
 [_IocClassResolver_]: #iocserviceresolver
 [_IocParameterResolver_]: #iocparameterresolver
+[_IocParametersResolver_]: #iocparametersresolver
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

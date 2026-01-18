@@ -7,6 +7,11 @@ namespace IocInterop\Interface;
  * The [_IocServices_][] interface affords a registry of service instances,
  * builders, and aliases.
  *
+ * - Notes:
+ *
+ *     - **TBD** Prime the implementation with an [_IocClassResolver_][]
+ *       instance.
+ *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
  */
@@ -38,7 +43,10 @@ interface IocServices
      * @param ioc_service_name_string $serviceName
      * @param ioc_service_object $instance
      */
-    public function setServiceInstance(string $serviceName, object $instance) : void;
+    public function setServiceInstance(
+        string $serviceName,
+        object $instance,
+    ) : void;
 
     /**
      * Unsets the shared instance of the `$serviceName`.
@@ -49,11 +57,6 @@ interface IocServices
 
     /**
      * Has an [_IocServiceBuilder_][] for the `$serviceName` been set?
-     *
-     * - Notes:
-     *
-     *     - **TBD** May not have much meaning since getServiceBuilder() always
-     *       returns an instance.
      *
      * @param ioc_service_name_string $serviceName
      */
@@ -111,6 +114,12 @@ interface IocServices
      *     - Implementations MUST throw [_IocThrowable_][] an alias for the
      *       `$serviceName` is not available.
      *
+     *     - **TBD** Recursive resolution.
+     *
+     * - Notes:
+     *
+     *     - **TBD** Rescursive aliases are allowed.
+     *
      * @param ioc_service_name_string $serviceName
      * @return ioc_service_name_string
      */
@@ -121,14 +130,11 @@ interface IocServices
      *
      * - Directives:
      *
-     *     - Implementations MUST throw [_IocThrowable_][] if the
-     *       `$serviceAlias` itself is aliased.
+     *     - **TBD** Circular tracking.
      *
      * - Notes:
      *
-     *     - **Only one level of aliasing is allowed.** An alias may not point
-     *       to another alias; this is to prevent the possibillity of infinite
-     *       recursion.
+     *     - **TBD** Rescursive aliases are allowed.
      *
      * @param ioc_service_name_string $serviceName
      * @param ioc_service_name_string $serviceAlias

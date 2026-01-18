@@ -7,13 +7,29 @@ namespace IocInterop\Interface;
  * The [_IocContainer_][] interface affords obtaining services by
  * name, whether as shared instances or new unshared instances.
  *
+ * - Directives:
+ *
+ *     - Implementations MUST retain an instance of the container itself under
+ *       a `$serviceName` of `IocContainer::class`.
+ *
  * - Notes:
  *
- *     - **TBD** Construct with, or extend, [_IocServices_][].
+ *     - **This interface does not afford service registration.** The container
+ *       will need to obtain services from [_IocServices_][] somehow:
  *
- *     - **TBD** Prime by setting an instance of [_IocContainer_][]::class.
+ *         - Some implementors will prefer an "open" approach, where the
+ *           services are set and modified directly on the container
+ *           itself, in which case implementing both [_IocContainer_][] and
+ *           [_IocServices_][], or a container implementation extending a
+ *           services implementation, is reasonable.
  *
- *     - **TBD** Prime by setting an instance of [_IocClassResolver_][]::class.
+ *         - Other implementors will prefer a "closed" approach, where an
+ *           [_IocServices_][] implementation is encapsulated but not exposed by
+ *           an [_IocContainer_][] implementation.
+ *
+ *     - **Keep the container itself as a service.** This allows factory
+ *       and builder services to depend on the container; it may be easiest
+ *       to do so as part of `__construct()`.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
@@ -29,13 +45,15 @@ interface IocContainer
      *     - Implementations MUST convert the `$serviceName` argument to its
      *       alias, if an alias exists for that `$serviceName`.
      *
-     *     - **TBD** MUST return `true` if `hasServiceInstance($serviceName)`.
+     *     - Implementations MUST return `true` if ...
      *
-     *     - **TBD** Otherwise, MUST return `true` if `hasServiceBuilder($serviceName)`
-     *       and `getServiceBuilder($serviceName)->hasServiceFactory()`.
+     *         - the container has access to a shared instance of
+     *           `$serviceName`; or,
      *
-     *     - **TBD** Otherwise, MUST return `true` if
-     *         `getService(IocClassResolver::class)->isServiceResolvable($serviceName)`.
+     *         - the container has access to a service builder for
+     *           `$serviceName` that has a service factory; or,
+     *
+     *         - the `$serviceName` is an instantiable class.
      *
      * @param ioc_service_name_string $serviceName
      */
@@ -84,10 +102,9 @@ interface IocContainer
      *
      * - Notes:
      *
-     *     - **Service instantiation logic is not specified.** Implementations
-     *       might use autowiring, configuration, builders, or some other means
-     *       to create the service. The creation logic might be part of
-     *       the container, or it might be part of some other subsystem.
+     *     - **TBD** Typically via a service builder.
+     *
+     *     - **TBD** Circular tracking.
      *
      * @param ioc_service_name_string $serviceName
      * @param mixed[] $serviceArgs
