@@ -107,11 +107,11 @@ interface IocContainer
      *     - **TBD** Circular tracking.
      *
      * @param ioc_service_name_string $serviceName
-     * @param mixed[] $serviceArgs
+     * @param mixed[] $arguments
      * @return ioc_service_object
      */
     public function newService(
         string $serviceName,
-        array $serviceArgs = [],
+        array $arguments = [],
     ) : object;
 }

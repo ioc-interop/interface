@@ -47,8 +47,8 @@ interface IocServiceBuilder
      *
      *     - **TBD** If no factory, MUST throw.
      *
-     *     - **TBD** If $serviceArgs not empty, and factory cannot receive
-     *       $serviceArgs as 2nd parameter, MUST throw.
+     *     - **TBD** If $arguments not empty, and factory cannot receive
+     *       $arguments as 2nd parameter, MUST throw.
      *
      * - Notes:
      *
@@ -56,11 +56,11 @@ interface IocServiceBuilder
      *       param may not be present, and should warn when newServiceWithArgs()
      *       cannot honor the args.
      *
-     * @param mixed[] $serviceArgs
+     * @param mixed[] $arguments
      */
     public function runServiceFactory(
         IocContainer $ioc,
-        array $serviceArgs = []
+        array $arguments = []
     ) : object;
 
     /**
@@ -118,10 +118,10 @@ interface IocServiceBuilder
      *     - **TBD** Instantiate (by factory or resolver) then apply extenders
      *       then return.
      *
-     * @param mixed[] $serviceArgs
+     * @param mixed[] $arguments
      */
     public function buildService(
         IocContainer $ioc,
-        array $serviceArgs = [],
+        array $arguments = [],
     ) : object;
 }

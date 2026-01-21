@@ -114,7 +114,7 @@ instances or new unshared instances.
 - ```php
   public function newService(
       ioc_service_name_string $serviceName,
-      mixed[] $serviceArgs = [],
+      mixed[] $arguments = [],
   ) : ioc_service_object;
   ```
     - Returns a new instance of the service.
@@ -318,7 +318,7 @@ instantiation and extended post-instantiation logic.
 - ```php
   public function runServiceFactory(
       IocContainer $ioc,
-      mixed[] $serviceArgs = [],
+      mixed[] $arguments = [],
   ) : object;
   ```
     - Invokes the service factory callable that instantiates the service.
@@ -327,8 +327,8 @@ instantiation and extended post-instantiation logic.
 
         - **TBD** If no factory, MUST throw.
 
-        - **TBD** If $serviceArgs not empty, and factory cannot receive
-          $serviceArgs as 2nd parameter, MUST throw.
+        - **TBD** If $arguments not empty, and factory cannot receive
+          $arguments as 2nd parameter, MUST throw.
 
     - Notes:
 
@@ -378,7 +378,7 @@ instantiation and extended post-instantiation logic.
 - ```php
   public function buildService(
       IocContainer $ioc,
-      mixed[] $serviceArgs = [],
+      mixed[] $arguments = [],
   ) : object;
   ```
     - Creates and returns a new instance of the service.
