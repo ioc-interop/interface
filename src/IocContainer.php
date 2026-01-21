@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocContainer_][] interface affords obtaining services by
- * name, whether as shared instances or new unshared instances.
+ * [_IocContainer_][] affords obtaining services by name, whether as shared
+ * instances or new unshared instances.
  *
  * - Directives:
  *

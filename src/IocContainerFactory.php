@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocContainerFactory_][] interface affords obtaining a new instance of
+ * [_IocContainerFactory_][] affords obtaining a new instance of
  * [_IocContainer_][].
  */
 interface IocContainerFactory

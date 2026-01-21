@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocServicesProvider_][] interface affords provision of service
- * instances, builders, and aliases to an [_IocServices_][] instance.
+ * [_IocServicesProvider_][] affords provision of service instances, builders,
+ * and aliases to an [_IocServices_][] instance.
  */
 interface IocServicesProvider
 {

@@ -7,8 +7,8 @@ use IocInterop\Interface\IocContainer;
 use IocInterop\Interface\IocTypeAliases;
 
 /**
- * The [_IocClassResolver_][] interface affords resolving a class name to a new
- * instance of that class.
+ * [_IocClassResolver_][] affords resolving a class name to a new instance of
+ * that class.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases

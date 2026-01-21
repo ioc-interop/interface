@@ -21,20 +21,22 @@ This package defines the following interfaces:
 
 - [_IocServiceBuilder_][] affords building a service, including both instantiation and extended post-instantiation logic.
 
-- [_IocClassResolver_][] affords service instantiation.
+- [_IocClassResolver_][] affords resolving a class name to a new instance of that class.
 
-- [_IocParameterResolver_][] affords obtaining an argument for a parameter.
+- [_IocParametersResolver_][] affords resolving an array of parameters to an array of named arguments.
+
+- [_IocParameterResolver_][] affords resolving a parameter to an argument value.
 
 - [_IocContainerFactory_][] affords obtaining a new instance of [_IocContainer_][].
 
-- [_IocThrowable_][] extends [_Throwable_][] to mark an [_Exception_][] as IOC-related.
+- [_IocThrowable_][] extends [_Throwable_][] to mark an [_Exception_][] as IOC-related. It adds no class members.
 
 - [_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
 
 ### _IocContainer_
 
-The [_IocContainer_][] interface affords obtaining services by
-name, whether as shared instances or new unshared instances.
+[_IocContainer_][] affords obtaining services by name, whether as shared
+instances or new unshared instances.
 
 - Directives:
 
@@ -136,8 +138,8 @@ name, whether as shared instances or new unshared instances.
 
 ### _IocServices_
 
-The [_IocServices_][] interface affords a registry of service instances,
-builders, and aliases.
+[_IocServices_][] affords a registry of service instances, builders, and
+aliases.
 
 - Notes:
 
@@ -264,8 +266,8 @@ builders, and aliases.
 
 ### _IocServicesProvider_
 
-The [_IocServicesProvider_][] interface affords provision of service
-instances, builders, and aliases to an [_IocServices_][] instance.
+[_IocServicesProvider_][] affords provision of service instances, builders,
+and aliases to an [_IocServices_][] instance.
 
 #### _IocServicesProvider_ Methods
 
@@ -282,8 +284,8 @@ instances, builders, and aliases to an [_IocServices_][] instance.
 
 ### _IocServiceBuilder_
 
-The [_IocServiceBuilder_][] interface affords building a service,
-including both instantiation and extended post-instantiation logic.
+[_IocServiceBuilder_][] affords building a service, including both
+instantiation and extended post-instantiation logic.
 
 #### _IocServiceBuilder_ Methods
 
@@ -388,8 +390,8 @@ including both instantiation and extended post-instantiation logic.
 
 ### _IocClassResolver_
 
-The [_IocClassResolver_][] interface affords resolving a class name to a new
-instance of that class.
+[_IocClassResolver_][] affords resolving a class name to a new instance of
+that class.
 
 #### _IocClassResolver_ Methods
 
@@ -422,8 +424,8 @@ instance of that class.
 
 ### _IocParametersResolver_
 
-The [_IocParametersResolver_][] interface affords resolving an array of
-parameters to an array of named arguments.
+[_IocParametersResolver_][] affords resolving an array of parameters to an
+array of named arguments.
 
 #### _IocParametersResolver_ Methods
 
@@ -456,8 +458,8 @@ parameters to an array of named arguments.
 
 ### _IocParameterResolver_
 
-The [_IocParameterResolver_][] interface affords resolving a parameter to an
-argument value.
+[_IocParameterResolver_][] affords resolving a parameter to an argument
+value.
 
 - Directives:
 
@@ -508,7 +510,7 @@ argument value.
 
 ### _IocContainerFactory_
 
-The [_IocContainerFactory_][] interface affords obtaining a new instance of
+[_IocContainerFactory_][] affords obtaining a new instance of
 [_IocContainer_][].
 
 #### _IocContainerFactory_ Methods
@@ -528,13 +530,12 @@ The [_IocContainerFactory_][] interface affords obtaining a new instance of
 
 ### _IocThrowable_
 
-The [_IocThrowable_][] interface extends [_Throwable_][] to mark an
-[_Exception_][] as IOC-related. It adds no class members.
+[_IocThrowable_][] extends [_Throwable_][] to mark an [_Exception_][] as
+IOC-related. It adds no class members.
 
 ### _IocTypeAliases_
 
-The [_IocTypeAliases_][] interface defines PHPStan type aliases
-to aid static analysis.
+[_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
 
 - ```
   ioc_service_extender_callable callable(object,IocContainer):object

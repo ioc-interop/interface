@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocServiceBuilder_][] interface affords building a service,
- * including both instantiation and extended post-instantiation logic.
+ * [_IocServiceBuilder_][] affords building a service, including both
+ * instantiation and extended post-instantiation logic.
  *
  * @phpstan-import-type ioc_service_factory_callable from IocTypeAliases
  * @phpstan-import-type ioc_service_extender_callable from IocTypeAliases

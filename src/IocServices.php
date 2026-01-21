@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * The [_IocServices_][] interface affords a registry of service instances,
- * builders, and aliases.
+ * [_IocServices_][] affords a registry of service instances, builders, and
+ * aliases.
  *
  * - Notes:
  *

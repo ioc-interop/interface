@@ -13,23 +13,7 @@ interpreted as described in [BCP 14][] ([RFC 2119][], [RFC 8174][]).
 
 This package defines the following interfaces:
 
-- [_IocContainer_][] affords obtaining services by name, whether as shared instances or new unshared instances.
-
-- [_IocServices_][] affords a registry of service instances, builders, and aliases.
-
-- [_IocServicesProvider_][] affords provision of service instances, builders, and aliases to an [_IocServices_][] instance.
-
-- [_IocServiceBuilder_][] affords building a service, including both instantiation and extended post-instantiation logic.
-
-- [_IocClassResolver_][] affords service instantiation.
-
-- [_IocParameterResolver_][] affords obtaining an argument for a parameter.
-
-- [_IocContainerFactory_][] affords obtaining a new instance of [_IocContainer_][].
-
-- [_IocThrowable_][] extends [_Throwable_][] to mark an [_Exception_][] as IOC-related.
-
-- [_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
+{{= list }}
 
 {{= docs }}
 

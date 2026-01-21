@@ -7,8 +7,8 @@ use IocInterop\Interface\IocContainer;
 use ReflectionParameter;
 
 /**
- * The [_IocParametersResolver_][] interface affords resolving an array of
- * parameters to an array of named arguments.
+ * [_IocParametersResolver_][] affords resolving an array of parameters to an
+ * array of named arguments.
  */
 interface IocParametersResolver
 {
