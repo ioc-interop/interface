@@ -8,6 +8,7 @@
         dirname(__DIR__) . "/src/Resolver/IocClassResolver.php",
         dirname(__DIR__) . "/src/Resolver/IocParametersResolver.php",
         dirname(__DIR__) . "/src/Resolver/IocParameterResolver.php",
+        dirname(__DIR__) . "/src/IocInstanceFactory.php",
         dirname(__DIR__) . "/src/IocContainerFactory.php",
         dirname(__DIR__) . "/src/IocThrowable.php",
         dirname(__DIR__) . "/src/IocTypeAliases.php",

@@ -14,10 +14,9 @@ namespace IocInterop\Interface;
  *       etc.
  *
  * - ```
- *   ioc_service_factory_callable callable(IocContainer):object|callable(IocContainer,mixed[]=):object
+ *   ioc_service_factory_callable callable(IocContainer):object
  *   ```
- *     - A `callable` for service instantiation logic, with or without a
- *       parameter for optional override constructor arguments.
+ *     - A `callable` for service instantiation logic.
  *
  * - ```
  *   ioc_service_name_string class-string<T>|string

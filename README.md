@@ -27,6 +27,8 @@ This package defines the following interfaces:
 
 - [_IocParameterResolver_][] affords resolving a parameter to an argument value.
 
+- [_IocInstanceFactory_][] affords instantiating a class.
+
 - [_IocContainerFactory_][] affords obtaining a new instance of [_IocContainer_][].
 
 - [_IocThrowable_][] extends [_Throwable_][] to mark an [_Exception_][] as IOC-related. It adds no class members.
@@ -83,7 +85,7 @@ instances or new unshared instances.
             - the container has access to a service builder for
               `$serviceName` that has a service factory; or,
 
-            - the `$serviceName` is an instantiable class.
+            - the `$serviceName` exists as an instantiable class.
 
 - ```php
   public function getService(
@@ -110,31 +112,6 @@ instances or new unshared instances.
           this likely means calling `newService($serviceName)` and holding
           onto the newly-created instance for later calls to
           `getService($serviceName)`.
-
-- ```php
-  public function newService(
-      ioc_service_name_string $serviceName,
-      mixed[] $arguments = [],
-  ) : ioc_service_object;
-  ```
-    - Returns a new instance of the service.
-
-    - Directives:
-
-        - Implementations MUST convert the `$serviceName` argument to its
-          alias, if an alias exists for that `$serviceName`.
-
-        - Implementations MUST throw [_IocThrowable_][] if the
-          container cannot return a new instance of the service.
-
-        - Implementations MUST return a different instance of the
-          service each time this method is called.
-
-    - Notes:
-
-        - **TBD** Typically via a service builder.
-
-        - **TBD** Circular tracking.
 
 ### _IocServices_
 
@@ -301,7 +278,8 @@ instantiation and extended post-instantiation logic.
 
     - Directives:
 
-        - **TBD** MUST throw if no factory.
+        - Implementations MUST throw [_IocThrowable_][] if there is no
+          factory for the service.
 
 - ```php
   public function setServiceFactory(callable $serviceFactory) : self;
@@ -310,31 +288,18 @@ instantiation and extended post-instantiation logic.
 
     - Notes:
 
-        - **TBD** Takes precedence over any other instantiation logic.
-
         - **The `callable` type allows for a wide range of implementations.**
           Cf. the <https://php.net/callable> documentation for more.
 
 - ```php
-  public function runServiceFactory(
-      IocContainer $ioc,
-      mixed[] $arguments = [],
-  ) : object;
+  public function runServiceFactory(IocContainer $ioc) : object;
   ```
     - Invokes the service factory callable that instantiates the service.
 
     - Directives:
 
-        - **TBD** If no factory, MUST throw.
-
-        - **TBD** If $arguments not empty, and factory cannot receive
-          $arguments as 2nd parameter, MUST throw.
-
-    - Notes:
-
-        - **TBD** Only check second arg; IocContainer is assumed, but args
-          param may not be present, and should warn when newServiceWithArgs()
-          cannot honor the args.
+        - Implementations MUST throw [_IocThrowable_][] if there is no
+          factory for the service.
 
 - ```php
   public function unsetServiceFactory() : $this;
@@ -376,10 +341,7 @@ instantiation and extended post-instantiation logic.
           Cf. the <https://php.net/callable> documentation for more.
 
 - ```php
-  public function buildService(
-      IocContainer $ioc,
-      mixed[] $arguments = [],
-  ) : object;
+  public function buildService(IocContainer $ioc) : object;
   ```
     - Creates and returns a new instance of the service.
 
@@ -508,6 +470,29 @@ value.
           service from the container, and then obtain a value from that
           service.
 
+### _IocInstanceFactory_
+
+[_IocInstanceFactory_][] affords instantiating a class.
+
+#### _IocInstanceFactory_ Methods
+
+- ```php
+  public function newInstance(
+      string $class,
+      mixed[] $arguments = [],
+  ) : ($class is class-string<T> ? T
+  ```
+    - Returns a new instance of the `$class` with `$arguments` constructor
+    argument overrides.
+
+    - Notes:
+
+        - **Use this for custom factory classes.** The [_IocClassResolver_][]
+          needs an [_IocContainer_][] as its first parameter, this method
+          does not. In turn, that means this class probably ought to be
+          constructed with both a container and a class resolver, so that
+          this method can forward to the class resolver with the container.
+
 ### _IocContainerFactory_
 
 [_IocContainerFactory_][] affords obtaining a new instance of
@@ -579,20 +564,32 @@ IOC-related. It adds no class members.
 items from a container, and to see if that container `has` a particular item.
 The Ioc-Interop standard is more expansive.
 
-- Ioc-Interop offers separate interface methods for getting shared service
-  instances and creating new service instances. PSR-11 defines only `get()`,
-  which may do either or both depending on the implementation.
-
-- Ioc-Interop offers an interface to set/get/has/unset service instances,
-  builders, and aliases. PSR-11 offers no such interface.
-
 - Ioc-Interop is intended to contain only services (`object`). PSR-11
   is intended to contain anything (`mixed`).
 
-- Ioc-Interop offers a container factory. PSR-11 offers none.
+- Ioc-Interop and PSR-11 each offer a method to "get" a service. Whereas PSR-11
+  does not specify the scope or lifetime of the service, Ioc-Interop specifies
+  it as "shared" (aka "singleton" or "request-scoped").
 
-- Ioc-Interop defines only one _Throwable_ interface; PSR-11 defines two
-  exception interfaces.
+- Ioc-Interop and PSR-11 each offer a method to see if the container "has" a
+  service. Whereas PSR-11 does not specify what "has" means, Ioc-Interop defines
+  it to mean that the container has access to a shared instance of the service,
+  or that it has access to the logic needed to build such an instance.
+
+- Ioc-Interop offers an [_IocInstanceFactory_][] to explicitly create new
+  instances. PSR-11 offers no similar interface.
+
+- Ioc-Interop offers an [_IocServicesInterface_][] to set/get/has/unset service
+  instances, builders, and aliases, separately from the container itself. PSR-11
+  offers no such interface.
+
+- Ioc-Interop offers [_IocClassResolver_][], [_IocParametersResolver_][], and
+  [_IocParameterResolver_][] interfaces. PSR-11 offers none.
+
+- Ioc-Interop offers a [_IocContainerFactory_][] interface. PSR-11 offers none.
+
+- Ioc-Interop defines one [_IocThrowable_][] interface. PSR-11 defines two
+  exception marker iterfaces.
 
 ### Is Ioc-Interop compatible with PSR-11?
 
@@ -611,9 +608,9 @@ order to retrieve other dependencies from it.
 TBD: To maintain conceptual integrity and consistent expectations. Given that
 `getService()` returns a shared service, and `newService()` returns a new
 instance, what does it mean to "get" a shared string value or a "new" string
-value? How then to get non-object configuration values? Create config objects as services.
-How to inject non-object values as constructor args? Consider _IocParameterResolver_
-attributes.
+value? How then to get non-object configuration values? Create config objects as
+services. How to inject non-object values as constructor args? Consider
+_IocParameterResolver_ attributes.
 
 ### Why does _IocContainer_ define `newService()` instead of `make()`, `create()`, or `build()` ?
 
@@ -720,20 +717,26 @@ TBD: Ioc-Interop asserts that all services should be shared (aka "singleton" or
 "request-scoped") services. [PHP-DI](https://github.com/PHP-DI/PHP-DI/blob/master/doc/scopes.md)
 outlines the case. Consumers needing transient, prototype, or new-every-time
 service instances are encouraged to depend on shared factory services instead,
-or to build custom factories that call `newService()` when a new instance is
-required.
+or to build custom factories that encapsulate an implementation of
+[_IocInstanceFactory_][].
+
+## Why a separate _IocInstanceFactory_ ?
+
+TBD: No `newService()` method, but useful to have object-creation capabality
+without having to pass around *both* a container *and* a class resolver.
 
 * * *
 
 [_Exception_]: https://php.net/Exception
+[_IocClassResolver_]: #iocserviceresolver
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
-[_IocServicesProvider_]: #iocservicesprovider
-[_IocServices_]: #iocservices
-[_IocServiceBuilder_]: #iocservicebuilder
-[_IocClassResolver_]: #iocserviceresolver
+[_IocInstanceFactory_]: #iocinstancefactory
 [_IocParameterResolver_]: #iocparameterresolver
 [_IocParametersResolver_]: #iocparametersresolver
+[_IocServiceBuilder_]: #iocservicebuilder
+[_IocServices_]: #iocservices
+[_IocServicesProvider_]: #iocservicesprovider
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

@@ -22,7 +22,8 @@ interface IocServiceBuilder
      *
      * - Directives:
      *
-     *     - **TBD** MUST throw if no factory.
+     *     - Implementations MUST throw [_IocThrowable_][] if there is no
+     *       factory for the service.
      *
      * @return ioc_service_factory_callable
      */
@@ -32,8 +33,6 @@ interface IocServiceBuilder
      * Sets the factory that instantiates the service.
      *
      * - Notes:
-     *
-     *     - **TBD** Takes precedence over any other instantiation logic.
      *
      *     - **The `callable` type allows for a wide range of implementations.**
      *       Cf. the <https://php.net/callable> documentation for more.
@@ -45,23 +44,10 @@ interface IocServiceBuilder
      *
      * - Directives:
      *
-     *     - **TBD** If no factory, MUST throw.
-     *
-     *     - **TBD** If $arguments not empty, and factory cannot receive
-     *       $arguments as 2nd parameter, MUST throw.
-     *
-     * - Notes:
-     *
-     *     - **TBD** Only check second arg; IocContainer is assumed, but args
-     *       param may not be present, and should warn when newServiceWithArgs()
-     *       cannot honor the args.
-     *
-     * @param mixed[] $arguments
+     *     - Implementations MUST throw [_IocThrowable_][] if there is no
+     *       factory for the service.
      */
-    public function runServiceFactory(
-        IocContainer $ioc,
-        array $arguments = []
-    ) : object;
+    public function runServiceFactory(IocContainer $ioc) : object;
 
     /**
      * Unsets the factory that instantiates the service.
@@ -117,11 +103,6 @@ interface IocServiceBuilder
      *
      *     - **TBD** Instantiate (by factory or resolver) then apply extenders
      *       then return.
-     *
-     * @param mixed[] $arguments
      */
-    public function buildService(
-        IocContainer $ioc,
-        array $arguments = [],
-    ) : object;
+    public function buildService(IocContainer $ioc) : object;
 }

@@ -36,20 +36,32 @@ This package defines the following interfaces:
 items from a container, and to see if that container `has` a particular item.
 The Ioc-Interop standard is more expansive.
 
-- Ioc-Interop offers separate interface methods for getting shared service
-  instances and creating new service instances. PSR-11 defines only `get()`,
-  which may do either or both depending on the implementation.
-
-- Ioc-Interop offers an interface to set/get/has/unset service instances,
-  builders, and aliases. PSR-11 offers no such interface.
-
 - Ioc-Interop is intended to contain only services (`object`). PSR-11
   is intended to contain anything (`mixed`).
 
-- Ioc-Interop offers a container factory. PSR-11 offers none.
+- Ioc-Interop and PSR-11 each offer a method to "get" a service. Whereas PSR-11
+  does not specify the scope or lifetime of the service, Ioc-Interop specifies
+  it as "shared" (aka "singleton" or "request-scoped").
 
-- Ioc-Interop defines only one _Throwable_ interface; PSR-11 defines two
-  exception interfaces.
+- Ioc-Interop and PSR-11 each offer a method to see if the container "has" a
+  service. Whereas PSR-11 does not specify what "has" means, Ioc-Interop defines
+  it to mean that the container has access to a shared instance of the service,
+  or that it has access to the logic needed to build such an instance.
+
+- Ioc-Interop offers an [_IocInstanceFactory_][] to explicitly create new
+  instances. PSR-11 offers no similar interface.
+
+- Ioc-Interop offers an [_IocServicesInterface_][] to set/get/has/unset service
+  instances, builders, and aliases, separately from the container itself. PSR-11
+  offers no such interface.
+
+- Ioc-Interop offers [_IocClassResolver_][], [_IocParametersResolver_][], and
+  [_IocParameterResolver_][] interfaces. PSR-11 offers none.
+
+- Ioc-Interop offers a [_IocContainerFactory_][] interface. PSR-11 offers none.
+
+- Ioc-Interop defines one [_IocThrowable_][] interface. PSR-11 defines two
+  exception marker iterfaces.
 
 ### Is Ioc-Interop compatible with PSR-11?
 
@@ -68,9 +80,9 @@ order to retrieve other dependencies from it.
 TBD: To maintain conceptual integrity and consistent expectations. Given that
 `getService()` returns a shared service, and `newService()` returns a new
 instance, what does it mean to "get" a shared string value or a "new" string
-value? How then to get non-object configuration values? Create config objects as services.
-How to inject non-object values as constructor args? Consider _IocParameterResolver_
-attributes.
+value? How then to get non-object configuration values? Create config objects as
+services. How to inject non-object values as constructor args? Consider
+_IocParameterResolver_ attributes.
 
 ### Why does _IocContainer_ define `newService()` instead of `make()`, `create()`, or `build()` ?
 
@@ -177,20 +189,26 @@ TBD: Ioc-Interop asserts that all services should be shared (aka "singleton" or
 "request-scoped") services. [PHP-DI](https://github.com/PHP-DI/PHP-DI/blob/master/doc/scopes.md)
 outlines the case. Consumers needing transient, prototype, or new-every-time
 service instances are encouraged to depend on shared factory services instead,
-or to build custom factories that call `newService()` when a new instance is
-required.
+or to build custom factories that encapsulate an implementation of
+[_IocInstanceFactory_][].
+
+## Why a separate _IocInstanceFactory_ ?
+
+TBD: No `newService()` method, but useful to have object-creation capabality
+without having to pass around *both* a container *and* a class resolver.
 
 * * *
 
 [_Exception_]: https://php.net/Exception
+[_IocClassResolver_]: #iocserviceresolver
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
-[_IocServicesProvider_]: #iocservicesprovider
-[_IocServices_]: #iocservices
-[_IocServiceBuilder_]: #iocservicebuilder
-[_IocClassResolver_]: #iocserviceresolver
+[_IocInstanceFactory_]: #iocinstancefactory
 [_IocParameterResolver_]: #iocparameterresolver
 [_IocParametersResolver_]: #iocparametersresolver
+[_IocServiceBuilder_]: #iocservicebuilder
+[_IocServices_]: #iocservices
+[_IocServicesProvider_]: #iocservicesprovider
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

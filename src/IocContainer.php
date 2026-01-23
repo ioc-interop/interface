@@ -53,7 +53,7 @@ interface IocContainer
      *         - the container has access to a service builder for
      *           `$serviceName` that has a service factory; or,
      *
-     *         - the `$serviceName` is an instantiable class.
+     *         - the `$serviceName` exists as an instantiable class.
      *
      * @param ioc_service_name_string $serviceName
      */
@@ -85,33 +85,4 @@ interface IocContainer
      * @return ioc_service_object
      */
     public function getService(string $serviceName) : object;
-
-    /**
-     * Returns a new instance of the service.
-     *
-     * - Directives:
-     *
-     *     - Implementations MUST convert the `$serviceName` argument to its
-     *       alias, if an alias exists for that `$serviceName`.
-     *
-     *     - Implementations MUST throw [_IocThrowable_][] if the
-     *       container cannot return a new instance of the service.
-     *
-     *     - Implementations MUST return a different instance of the
-     *       service each time this method is called.
-     *
-     * - Notes:
-     *
-     *     - **TBD** Typically via a service builder.
-     *
-     *     - **TBD** Circular tracking.
-     *
-     * @param ioc_service_name_string $serviceName
-     * @param mixed[] $arguments
-     * @return ioc_service_object
-     */
-    public function newService(
-        string $serviceName,
-        array $arguments = [],
-    ) : object;
 }
