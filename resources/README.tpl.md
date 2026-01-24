@@ -52,10 +52,10 @@ The Ioc-Interop standard is more expansive.
   instances. PSR-11 offers no similar interface.
 
 - Ioc-Interop offers an [_IocServicesInterface_][] to set/get/has/unset service
-  instances, builders, and aliases, separately from the container itself. PSR-11
+  instances, definitions, and aliases, separately from the container itself. PSR-11
   offers no such interface.
 
-- Ioc-Interop offers [_IocClassResolver_][], [_IocParametersResolver_][], and
+- Ioc-Interop offers [_IocResolver_][], [_IocParametersResolver_][], and
   [_IocParameterResolver_][] interfaces. PSR-11 offers none.
 
 - Ioc-Interop offers a [_IocContainerFactory_][] interface. PSR-11 offers none.
@@ -110,7 +110,7 @@ always returns a shared instance (after creating it if necessary).
 ### Why is _IocContainer_ separate from _IocServices_?
 
 Whereas _IocContainer_ is for *obtaining* instances, _IocServices_ is for
-*registering* the instances, builders, and aliases involved in producing the
+*registering* the instances, definitions, and aliases involved in producing the
 services to be obtained.
 
 This separation allows for containers that are fully "open" by implementing
@@ -123,7 +123,7 @@ the sense that the services are encapsulated but not publicly modifiable.
 implies only a `new` method. Even if there are multiple steps to the factory
 process, they are not accessible as public methods.
 
-### Why does _IocServicesProvider_ define `provideServices()` instead of `register()` ?
+### Why does _IocProvider_ define `provide()` instead of `register()` ?
 
 The method name `register()` is by far the majority choice for service provider
 implementations. This standard breaks with that choice for consistency reasons.
@@ -135,7 +135,7 @@ interface should be a _Registry_ or _Registrant_. Further, as with the other
 interfaces herein, the word "service" should be incorporated into the method
 name. This leaves few choices:
 
-- `IocServicesProvider::provideServices()` (closer to the majority class name)
+- `IocProvider::provide()` (closer to the majority class name)
 - `IocServicesRegistrant::registerServices()` (closer to the majority method name)
 
 Ioc-Interop opts in favor of honoring the class name, and modeling the method
@@ -144,7 +144,7 @@ name after it.
 ### What about property and setter injection?
 
 TBD: Supported indirectly as extenders. Implementors may add support as desired,
-perhaps in their [_IocServiceBuilder_][] implementations.
+perhaps in their [_IocDefinition_][] implementations.
 
 ## What about "action", "method", or "invoker" injection?
 
@@ -153,14 +153,14 @@ TBD: "Action" or "method" injection involves using a container to call a method
 services to the typehinted parameters on that method. Implementors are
 encouraged to add their own implementations.
 
-## Why an _IocServiceBuilder_ at all?
+## Why an _IocDefinition_ at all?
 
 TBD: Is a place to collect all building logic: factory, autowiring, extenders.
 Also a starting point for implementors to add arguments, setter injection,
 property injection, etc. Could put these on IocServices but that expands the
 API too much.
 
-## Why _IocServiceBuilder_ and not _IocServiceDefinition_ ?
+## Why _IocDefinition_ and not _IocServiceDefinition_ ?
 
 TBD: "Definition" is the only name used in the projects, when such functionality
 is offered. Ioc-Interop breaks with this in favor of the more-formal design
@@ -180,7 +180,7 @@ service to inject for a specific parameter.
 TBD: Property injection rare; setter injection less rare but introduces other
 problems (when/how to resolve arguments?). Ioc-Interop favors constructor
 injection as all projects support it. Implementors encouraged to add setter and
-property injection on _IocServiceBuilder_ implementations. Consumers may add
+property injection on _IocDefinition_ implementations. Consumers may add
 service extenders for post-instantiation logic.
 
 ## What about lifetime scopes?
@@ -200,15 +200,15 @@ without having to pass around *both* a container *and* a class resolver.
 * * *
 
 [_Exception_]: https://php.net/Exception
-[_IocClassResolver_]: #iocserviceresolver
+[_IocResolver_]: #iocserviceresolver
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
 [_IocInstanceFactory_]: #iocinstancefactory
 [_IocParameterResolver_]: #iocparameterresolver
 [_IocParametersResolver_]: #iocparametersresolver
-[_IocServiceBuilder_]: #iocservicebuilder
+[_IocDefinition_]: #iocservicebuilder
 [_IocServices_]: #iocservices
-[_IocServicesProvider_]: #iocservicesprovider
+[_IocProvider_]: #iocservicesprovider
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

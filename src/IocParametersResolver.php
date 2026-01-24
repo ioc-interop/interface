@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace IocInterop\Interface\Resolver;
+namespace IocInterop\Interface;
 
 use IocInterop\Interface\IocContainer;
 use ReflectionParameter;

@@ -15,19 +15,19 @@ This package defines the following interfaces:
 
 - [_IocContainer_][] affords obtaining services by name, whether as shared instances or new unshared instances.
 
-- [_IocServices_][] affords a registry of service instances, builders, and aliases.
+- [_IocInstanceFactory_][] affords instantiating a class.
 
-- [_IocServicesProvider_][] affords provision of service instances, builders, and aliases to an [_IocServices_][] instance.
+- [_IocServices_][] affords a registry of service instances, definitions, and aliases.
 
-- [_IocServiceBuilder_][] affords building a service, including both instantiation and extended post-instantiation logic.
+- [_IocProvider_][] affords provision of service instances, definitions, and aliases to an [_IocServices_][] instance.
 
-- [_IocClassResolver_][] affords resolving a class name to a new instance of that class.
+- [_IocDefinition_][] affords building a service, including both instantiation and extended post-instantiation logic.
+
+- [_IocResolver_][] affords resolving a class name to a new instance of that class.
 
 - [_IocParametersResolver_][] affords resolving an array of parameters to an array of named arguments.
 
 - [_IocParameterResolver_][] affords resolving a parameter to an argument value.
-
-- [_IocInstanceFactory_][] affords instantiating a class.
 
 - [_IocContainerFactory_][] affords obtaining a new instance of [_IocContainer_][].
 
@@ -113,25 +113,48 @@ instances or new unshared instances.
           onto the newly-created instance for later calls to
           `getService($serviceName)`.
 
+### _IocInstanceFactory_
+
+[_IocInstanceFactory_][] affords instantiating a class.
+
+#### _IocInstanceFactory_ Methods
+
+- ```php
+  public function newInstance(
+      string $class,
+      mixed[] $arguments = [],
+  ) : ($class is class-string<T> ? T
+  ```
+    - Returns a new instance of the `$class` with `$arguments` constructor
+    argument overrides.
+
+    - Notes:
+
+        - **Use this for custom factory classes.** The [_IocResolver_][]
+          needs an [_IocContainer_][] as its first parameter, this method
+          does not. In turn, that means this class probably ought to be
+          constructed with both a container and a class resolver, so that
+          this method can forward to the class resolver with the container.
+
 ### _IocServices_
 
-[_IocServices_][] affords a registry of service instances, builders, and
+[_IocServices_][] affords a registry of service instances, definitions, and
 aliases.
 
 - Notes:
 
-    - **TBD** Prime the implementation with an [_IocClassResolver_][]
+    - **TBD** Prime the implementation with an [_IocResolver_][]
       instance.
 
 #### _IocServices_ Methods
 
 - ```php
-  public function hasServiceInstance(ioc_service_name_string $serviceName) : bool;
+  public function hasInstance(ioc_service_name_string $serviceName) : bool;
   ```
     - Has a shared instance of the `$serviceName` been set?
 
 - ```php
-  public function getServiceInstance(
+  public function getInstance(
       ioc_service_name_string $serviceName,
   ) : ioc_service_object;
   ```
@@ -143,7 +166,7 @@ aliases.
           of the `$serviceName` is not available.
 
 - ```php
-  public function setServiceInstance(
+  public function setInstance(
       ioc_service_name_string $serviceName,
       ioc_service_object $instance,
   ) : void;
@@ -151,59 +174,55 @@ aliases.
     - Sets the shared instance of the `$serviceName`.
 
 - ```php
-  public function unsetServiceInstance(
-      ioc_service_name_string $serviceName,
-  ) : void;
+  public function unsetInstance(ioc_service_name_string $serviceName) : void;
   ```
     - Unsets the shared instance of the `$serviceName`.
 
 - ```php
-  public function hasServiceBuilder(ioc_service_name_string $serviceName) : bool;
+  public function hasDefinition(ioc_service_name_string $serviceName) : bool;
   ```
-    - Has an [_IocServiceBuilder_][] for the `$serviceName` been set?
+    - Has an [_IocDefinition_][] for the `$serviceName` been set?
 
 - ```php
-  public function getServiceBuilder(
+  public function getDefinition(
       ioc_service_name_string $serviceName,
-  ) : IocServiceBuilder;
+  ) : IocDefinition;
   ```
-    - Returns the [_IocServiceBuilder_][] for the `$serviceName`, instantiating
+    - Returns the [_IocDefinition_][] for the `$serviceName`, instantiating
     it if needed.
 
     - Notes:
 
-        - **TBD** Create using newServiceBuilder() and retain for later
+        - **TBD** Create using newDefinition() and retain for later
           return.
 
 - ```php
-  public function newServiceBuilder(
+  public function newDefinition(
       ioc_service_name_string $serviceName,
-  ) : IocServiceBuilder;
+  ) : IocDefinition;
   ```
-    - Returns a new [_IocServiceBuilder_][] for the `$serviceName`.
+    - Returns a new [_IocDefinition_][] for the `$serviceName`.
 
 - ```php
-  public function setServiceBuilder(
+  public function setDefinition(
       ioc_service_name_string $serviceName,
-      IocServiceBuilder $serviceBuilder,
+      IocDefinition $definition,
   ) : void;
   ```
-    - Sets the [_IocServiceBuilder_][] for the `$serviceName`.
+    - Sets the [_IocDefinition_][] for the `$serviceName`.
 
 - ```php
-  public function unsetServiceBuilder(
-      ioc_service_name_string $serviceName,
-  ) : void;
+  public function unsetDefinition(ioc_service_name_string $serviceName) : void;
   ```
-    - Unsets the [_IocServiceBuilder_][] for the `$serviceName`.
+    - Unsets the [_IocDefinition_][] for the `$serviceName`.
 
 - ```php
-  public function hasServiceAlias(ioc_service_name_string $serviceName) : bool;
+  public function hasAlias(ioc_service_name_string $serviceName) : bool;
   ```
     - Has an alias for the `$serviceName` been set?
 
 - ```php
-  public function getServiceAlias(
+  public function getAlias(
       ioc_service_name_string $serviceName,
   ) : ioc_service_name_string;
   ```
@@ -221,9 +240,9 @@ aliases.
         - **TBD** Rescursive aliases are allowed.
 
 - ```php
-  public function setServiceAlias(
+  public function setAlias(
       ioc_service_name_string $serviceName,
-      ioc_service_name_string $serviceAlias,
+      ioc_service_name_string $alias,
   ) : void;
   ```
     - Sets the alias for one `$serviceName` to another service.
@@ -237,42 +256,42 @@ aliases.
         - **TBD** Rescursive aliases are allowed.
 
 - ```php
-  public function unsetServiceAlias(ioc_service_name_string $serviceName) : void;
+  public function unsetAlias(ioc_service_name_string $serviceName) : void;
   ```
     - Unsets the alias for the `$serviceName`.
 
-### _IocServicesProvider_
+### _IocProvider_
 
-[_IocServicesProvider_][] affords provision of service instances, builders,
+[_IocProvider_][] affords provision of service instances, definitions,
 and aliases to an [_IocServices_][] instance.
 
-#### _IocServicesProvider_ Methods
+#### _IocProvider_ Methods
 
 - ```php
-  public function provideServices(IocServices $services) : void;
+  public function provide(IocServices $services) : void;
   ```
-    - Provides service instances, builders, and aliases to the `$services`.
+    - Provides service instances, definitions, and aliases to the `$services`.
 
     - Notes:
 
         - **Provision includes a wide range of activity.** The implementation
-          can set, unset, replace, modify, etc. the instances, builders, and
+          can set, unset, replace, modify, etc. the instances, definitions, and
           aliases in the `$services`.
 
-### _IocServiceBuilder_
+### _IocDefinition_
 
-[_IocServiceBuilder_][] affords building a service, including both
+[_IocDefinition_][] affords building a service, including both
 instantiation and extended post-instantiation logic.
 
-#### _IocServiceBuilder_ Methods
+#### _IocDefinition_ Methods
 
 - ```php
-  public function hasServiceFactory() : bool;
+  public function hasFactory() : bool;
   ```
     - Is there a factory that instantiates the service?
 
 - ```php
-  public function getServiceFactory() : ioc_service_factory_callable;
+  public function getFactory() : ioc_service_factory_callable;
   ```
     - Returns the factory that instantiates the service.
 
@@ -282,7 +301,7 @@ instantiation and extended post-instantiation logic.
           factory for the service.
 
 - ```php
-  public function setServiceFactory(callable $serviceFactory) : self;
+  public function setFactory(callable $factory) : self;
   ```
     - Sets the factory that instantiates the service.
 
@@ -292,46 +311,34 @@ instantiation and extended post-instantiation logic.
           Cf. the <https://php.net/callable> documentation for more.
 
 - ```php
-  public function runServiceFactory(IocContainer $ioc) : object;
-  ```
-    - Invokes the service factory callable that instantiates the service.
-
-    - Directives:
-
-        - Implementations MUST throw [_IocThrowable_][] if there is no
-          factory for the service.
-
-- ```php
-  public function unsetServiceFactory() : $this;
+  public function unsetFactory() : $this;
   ```
     - Unsets the factory that instantiates the service.
 
 - ```php
-  public function hasServiceExtenders() : bool;
+  public function hasExtenders() : bool;
   ```
     - Are there any post-instantiation extenders for the service?
 
 - ```php
-  public function getServiceExtenders() : ioc_service_extender_callable[];
+  public function getExtenders() : ioc_service_extender_callable[];
   ```
     - Returns the post-instantiation extenders for the service.
 
 - ```php
-  public function setServiceExtenders(
-      ioc_service_extender_callable[] $serviceExtenders,
+  public function setExtenders(
+      ioc_service_extender_callable[] $extenders,
   ) : $this;
   ```
     - Sets all post-instantiation extenders for the service.
 
 - ```php
-  public function unsetServiceExtenders() : $this;
+  public function unsetExtenders() : $this;
   ```
     - Unsets all post-instantiation extenders for the service.
 
 - ```php
-  public function addServiceExtender(
-      ioc_service_extender_callable $serviceExtender,
-  ) : $this;
+  public function addExtender(ioc_service_extender_callable $extender) : $this;
   ```
     - Adds a single service extender to the builder.
 
@@ -341,7 +348,7 @@ instantiation and extended post-instantiation logic.
           Cf. the <https://php.net/callable> documentation for more.
 
 - ```php
-  public function buildService(IocContainer $ioc) : object;
+  public function buildInstance(IocContainer $ioc) : object;
   ```
     - Creates and returns a new instance of the service.
 
@@ -350,21 +357,21 @@ instantiation and extended post-instantiation logic.
         - **TBD** Instantiate (by factory or resolver) then apply extenders
           then return.
 
-### _IocClassResolver_
+### _IocResolver_
 
-[_IocClassResolver_][] affords resolving a class name to a new instance of
+[_IocResolver_][] affords resolving a class name to a new instance of
 that class.
 
-#### _IocClassResolver_ Methods
+#### _IocResolver_ Methods
 
 - ```php
-  public function isClassResolvable(string $class) : bool;
+  public function isResolvable(string $class) : bool;
   ```
     - Does the `$class` exist, and is it instantiable?
 
 - ```php
-  public function resolveClass(
-      IocInterop\Interface\IocContainer $ioc,
+  public function resolve(
+      IocContainer $ioc,
       string $class,
       mixed[] $arguments = [],
   ) : ($class is class-string<T> ? T
@@ -393,7 +400,7 @@ array of named arguments.
 
 - ```php
   public function resolveParameters(
-      IocInterop\Interface\IocContainer $ioc,
+      IocContainer $ioc,
       ReflectionParameter[] $parameters,
       mixed[] $arguments = [],
   ) : mixed[];
@@ -457,7 +464,7 @@ value.
 
 - ```php
   public function resolveParameter(
-      IocInterop\Interface\IocContainer $ioc,
+      IocContainer $ioc,
       ReflectionParameter $parameter,
   ) : mixed;
   ```
@@ -469,29 +476,6 @@ value.
           at all. This allows (e.g.) attribute implementations to obtain a
           service from the container, and then obtain a value from that
           service.
-
-### _IocInstanceFactory_
-
-[_IocInstanceFactory_][] affords instantiating a class.
-
-#### _IocInstanceFactory_ Methods
-
-- ```php
-  public function newInstance(
-      string $class,
-      mixed[] $arguments = [],
-  ) : ($class is class-string<T> ? T
-  ```
-    - Returns a new instance of the `$class` with `$arguments` constructor
-    argument overrides.
-
-    - Notes:
-
-        - **Use this for custom factory classes.** The [_IocClassResolver_][]
-          needs an [_IocContainer_][] as its first parameter, this method
-          does not. In turn, that means this class probably ought to be
-          constructed with both a container and a class resolver, so that
-          this method can forward to the class resolver with the container.
 
 ### _IocContainerFactory_
 
@@ -530,10 +514,9 @@ IOC-related. It adds no class members.
       etc.
 
 - ```
-  ioc_service_factory_callable callable(IocContainer):object|callable(IocContainer,mixed[]=):object
+  ioc_service_factory_callable callable(IocContainer):object
   ```
-    - A `callable` for service instantiation logic, with or without a
-      parameter for optional override constructor arguments.
+    - A `callable` for service instantiation logic.
 
 - ```
   ioc_service_name_string class-string<T>|string
@@ -580,10 +563,10 @@ The Ioc-Interop standard is more expansive.
   instances. PSR-11 offers no similar interface.
 
 - Ioc-Interop offers an [_IocServicesInterface_][] to set/get/has/unset service
-  instances, builders, and aliases, separately from the container itself. PSR-11
+  instances, definitions, and aliases, separately from the container itself. PSR-11
   offers no such interface.
 
-- Ioc-Interop offers [_IocClassResolver_][], [_IocParametersResolver_][], and
+- Ioc-Interop offers [_IocResolver_][], [_IocParametersResolver_][], and
   [_IocParameterResolver_][] interfaces. PSR-11 offers none.
 
 - Ioc-Interop offers a [_IocContainerFactory_][] interface. PSR-11 offers none.
@@ -638,7 +621,7 @@ always returns a shared instance (after creating it if necessary).
 ### Why is _IocContainer_ separate from _IocServices_?
 
 Whereas _IocContainer_ is for *obtaining* instances, _IocServices_ is for
-*registering* the instances, builders, and aliases involved in producing the
+*registering* the instances, definitions, and aliases involved in producing the
 services to be obtained.
 
 This separation allows for containers that are fully "open" by implementing
@@ -651,7 +634,7 @@ the sense that the services are encapsulated but not publicly modifiable.
 implies only a `new` method. Even if there are multiple steps to the factory
 process, they are not accessible as public methods.
 
-### Why does _IocServicesProvider_ define `provideServices()` instead of `register()` ?
+### Why does _IocProvider_ define `provide()` instead of `register()` ?
 
 The method name `register()` is by far the majority choice for service provider
 implementations. This standard breaks with that choice for consistency reasons.
@@ -663,7 +646,7 @@ interface should be a _Registry_ or _Registrant_. Further, as with the other
 interfaces herein, the word "service" should be incorporated into the method
 name. This leaves few choices:
 
-- `IocServicesProvider::provideServices()` (closer to the majority class name)
+- `IocProvider::provide()` (closer to the majority class name)
 - `IocServicesRegistrant::registerServices()` (closer to the majority method name)
 
 Ioc-Interop opts in favor of honoring the class name, and modeling the method
@@ -672,7 +655,7 @@ name after it.
 ### What about property and setter injection?
 
 TBD: Supported indirectly as extenders. Implementors may add support as desired,
-perhaps in their [_IocServiceBuilder_][] implementations.
+perhaps in their [_IocDefinition_][] implementations.
 
 ## What about "action", "method", or "invoker" injection?
 
@@ -681,14 +664,14 @@ TBD: "Action" or "method" injection involves using a container to call a method
 services to the typehinted parameters on that method. Implementors are
 encouraged to add their own implementations.
 
-## Why an _IocServiceBuilder_ at all?
+## Why an _IocDefinition_ at all?
 
 TBD: Is a place to collect all building logic: factory, autowiring, extenders.
 Also a starting point for implementors to add arguments, setter injection,
 property injection, etc. Could put these on IocServices but that expands the
 API too much.
 
-## Why _IocServiceBuilder_ and not _IocServiceDefinition_ ?
+## Why _IocDefinition_ and not _IocServiceDefinition_ ?
 
 TBD: "Definition" is the only name used in the projects, when such functionality
 is offered. Ioc-Interop breaks with this in favor of the more-formal design
@@ -708,7 +691,7 @@ service to inject for a specific parameter.
 TBD: Property injection rare; setter injection less rare but introduces other
 problems (when/how to resolve arguments?). Ioc-Interop favors constructor
 injection as all projects support it. Implementors encouraged to add setter and
-property injection on _IocServiceBuilder_ implementations. Consumers may add
+property injection on _IocDefinition_ implementations. Consumers may add
 service extenders for post-instantiation logic.
 
 ## What about lifetime scopes?
@@ -728,15 +711,15 @@ without having to pass around *both* a container *and* a class resolver.
 * * *
 
 [_Exception_]: https://php.net/Exception
-[_IocClassResolver_]: #iocserviceresolver
+[_IocResolver_]: #iocserviceresolver
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
 [_IocInstanceFactory_]: #iocinstancefactory
 [_IocParameterResolver_]: #iocparameterresolver
 [_IocParametersResolver_]: #iocparametersresolver
-[_IocServiceBuilder_]: #iocservicebuilder
+[_IocDefinition_]: #iocservicebuilder
 [_IocServices_]: #iocservices
-[_IocServicesProvider_]: #iocservicesprovider
+[_IocProvider_]: #iocservicesprovider
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable

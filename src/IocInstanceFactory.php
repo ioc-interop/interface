@@ -14,7 +14,7 @@ interface IocInstanceFactory
      *
      * - Notes:
      *
-     *     - **Use this for custom factory classes.** The [_IocClassResolver_][]
+     *     - **Use this for custom factory classes.** The [_IocResolver_][]
      *       needs an [_IocContainer_][] as its first parameter, this method
      *       does not. In turn, that means this class probably ought to be
      *       constructed with both a container and a class resolver, so that

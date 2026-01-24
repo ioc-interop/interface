@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * [_IocServices_][] affords a registry of service instances, builders, and
+ * [_IocServices_][] affords a registry of service instances, definitions, and
  * aliases.
  *
  * - Notes:
  *
- *     - **TBD** Prime the implementation with an [_IocClassResolver_][]
+ *     - **TBD** Prime the implementation with an [_IocResolver_][]
  *       instance.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
@@ -22,7 +22,7 @@ interface IocServices
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function hasServiceInstance(string $serviceName) : bool;
+    public function hasInstance(string $serviceName) : bool;
 
     /**
      * Returns the shared instance of the `$serviceName`.
@@ -35,7 +35,7 @@ interface IocServices
      * @param ioc_service_name_string $serviceName
      * @return ioc_service_object
      */
-    public function getServiceInstance(string $serviceName) : object;
+    public function getInstance(string $serviceName) : object;
 
     /**
      * Sets the shared instance of the `$serviceName`.
@@ -43,7 +43,7 @@ interface IocServices
      * @param ioc_service_name_string $serviceName
      * @param ioc_service_object $instance
      */
-    public function setServiceInstance(
+    public function setInstance(
         string $serviceName,
         object $instance,
     ) : void;
@@ -53,58 +53,58 @@ interface IocServices
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function unsetServiceInstance(string $serviceName) : void;
+    public function unsetInstance(string $serviceName) : void;
 
     /**
-     * Has an [_IocServiceBuilder_][] for the `$serviceName` been set?
+     * Has an [_IocDefinition_][] for the `$serviceName` been set?
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function hasServiceBuilder(string $serviceName) : bool;
+    public function hasDefinition(string $serviceName) : bool;
 
     /**
-     * Returns the [_IocServiceBuilder_][] for the `$serviceName`, instantiating
+     * Returns the [_IocDefinition_][] for the `$serviceName`, instantiating
      * it if needed.
      *
      * - Notes:
      *
-     *     - **TBD** Create using newServiceBuilder() and retain for later
+     *     - **TBD** Create using newDefinition() and retain for later
      *       return.
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function getServiceBuilder(string $serviceName) : IocServiceBuilder;
+    public function getDefinition(string $serviceName) : IocDefinition;
 
     /**
-     * Returns a new [_IocServiceBuilder_][] for the `$serviceName`.
+     * Returns a new [_IocDefinition_][] for the `$serviceName`.
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function newServiceBuilder(string $serviceName) : IocServiceBuilder;
+    public function newDefinition(string $serviceName) : IocDefinition;
 
     /**
-     * Sets the [_IocServiceBuilder_][] for the `$serviceName`.
+     * Sets the [_IocDefinition_][] for the `$serviceName`.
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function setServiceBuilder(
+    public function setDefinition(
         string $serviceName,
-        IocServiceBuilder $serviceBuilder,
+        IocDefinition $definition,
     ) : void;
 
     /**
-     * Unsets the [_IocServiceBuilder_][] for the `$serviceName`.
+     * Unsets the [_IocDefinition_][] for the `$serviceName`.
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function unsetServiceBuilder(string $serviceName) : void;
+    public function unsetDefinition(string $serviceName) : void;
 
     /**
      * Has an alias for the `$serviceName` been set?
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function hasServiceAlias(string $serviceName) : bool;
+    public function hasAlias(string $serviceName) : bool;
 
     /**
      * Returns the alias for the `$serviceName`.
@@ -123,7 +123,7 @@ interface IocServices
      * @param ioc_service_name_string $serviceName
      * @return ioc_service_name_string
      */
-    public function getServiceAlias(string $serviceName) : string;
+    public function getAlias(string $serviceName) : string;
 
     /**
      * Sets the alias for one `$serviceName` to another service.
@@ -137,14 +137,14 @@ interface IocServices
      *     - **TBD** Rescursive aliases are allowed.
      *
      * @param ioc_service_name_string $serviceName
-     * @param ioc_service_name_string $serviceAlias
+     * @param ioc_service_name_string $alias
      */
-    public function setServiceAlias(string $serviceName, string $serviceAlias) : void;
+    public function setAlias(string $serviceName, string $alias) : void;
 
     /**
      * Unsets the alias for the `$serviceName`.
      *
      * @param ioc_service_name_string $serviceName
      */
-    public function unsetServiceAlias(string $serviceName) : void;
+    public function unsetAlias(string $serviceName) : void;
 }
