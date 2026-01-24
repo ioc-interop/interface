@@ -27,9 +27,9 @@ namespace IocInterop\Interface;
  *           [_IocServices_][] implementation is encapsulated but not exposed by
  *           an [_IocContainer_][] implementation.
  *
- *     - **Keep the container itself as a service.** This allows factory
- *       and builder services to depend on the container; it may be easiest
- *       to do so as part of `__construct()`.
+ *     - **Keep the container itself as a service.** This allows consumer
+ *       factories, builders, and locators to depend on the container. It may be
+ *       easiest to do so as part of `__construct()`.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
@@ -76,10 +76,9 @@ interface IocContainer
      *
      * - Notes:
      *
-     *     - **Create and retain a new instance if necessary.** In practice,
-     *       this likely means calling `newService($serviceName)` and holding
-     *       onto the newly-created instance for later calls to
-     *       `getService($serviceName)`.
+     *     - **Create a new service instance if necessary.** In practice, this
+     *       likely means calling `getDefinition($serviceName)->buildInstance()`
+     *       and then retaining that instance for later retrieval.
      *
      * @param ioc_service_name_string $serviceName
      * @return ioc_service_object

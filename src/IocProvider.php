@@ -15,8 +15,8 @@ interface IocProvider
      * - Notes:
      *
      *     - **Provision includes a wide range of activity.** The implementation
-     *       can set, unset, replace, modify, etc. the instances, definitions, and
-     *       aliases in the `$services`.
+     *       can set, unset, replace, modify, etc. the instances, definitions,
+     *       and aliases in the `$services`.
      */
     public function provide(IocServices $services) : void;
 }

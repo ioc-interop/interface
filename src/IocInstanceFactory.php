@@ -5,20 +5,23 @@ namespace IocInterop\Interface;
 
 /**
  * [_IocInstanceFactory_][] affords instantiating a class.
+ *
+ * - Notes:
+ *
+ *     - **The instance factory does not "build" or "retain" a new instance.**
+ *       It does not specify applying any post-instantiation logic, as with
+ *       [_IocDefinition_][]. Likewise, it does not "retain" the new
+ *       instance as with [_IocServices_]. It only instantiates and returns.
+ *
+ *     - **The instance factory is not a resolver.** However, implementations
+ *       are likely to compose an [_IocResolver_][] and [_IocContainer_][] to
+ *       support instantiation logic.
  */
 interface IocInstanceFactory
 {
     /**
      * Returns a new instance of the `$class` with `$arguments` constructor
      * argument overrides.
-     *
-     * - Notes:
-     *
-     *     - **Use this for custom factory classes.** The [_IocResolver_][]
-     *       needs an [_IocContainer_][] as its first parameter, this method
-     *       does not. In turn, that means this class probably ought to be
-     *       constructed with both a container and a class resolver, so that
-     *       this method can forward to the class resolver with the container.
      *
      * @template T of object
      * @param string $class

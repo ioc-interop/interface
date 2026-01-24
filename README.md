@@ -21,7 +21,7 @@ This package defines the following interfaces:
 
 - [_IocProvider_][] affords provision of service instances, definitions, and aliases to an [_IocServices_][] instance.
 
-- [_IocDefinition_][] affords building a service, including both instantiation and extended post-instantiation logic.
+- [_IocDefinition_][] affords building a service instance, including both instantiation logic and extended post-instantiation logic.
 
 - [_IocResolver_][] affords resolving a class name to a new instance of that class.
 
@@ -60,9 +60,9 @@ instances or new unshared instances.
           [_IocServices_][] implementation is encapsulated but not exposed by
           an [_IocContainer_][] implementation.
 
-    - **Keep the container itself as a service.** This allows factory
-      and builder services to depend on the container; it may be easiest
-      to do so as part of `__construct()`.
+    - **Keep the container itself as a service.** This allows consumer
+      factories, builders, and locators to depend on the container. It may be
+      easiest to do so as part of `__construct()`.
 
 #### _IocContainer_ Methods
 
@@ -108,14 +108,24 @@ instances or new unshared instances.
 
     - Notes:
 
-        - **Create and retain a new instance if necessary.** In practice,
-          this likely means calling `newService($serviceName)` and holding
-          onto the newly-created instance for later calls to
-          `getService($serviceName)`.
+        - **Create a new service instance if necessary.** In practice, this
+          likely means calling `getDefinition($serviceName)->buildInstance()`
+          and then retaining that instance for later retrieval.
 
 ### _IocInstanceFactory_
 
 [_IocInstanceFactory_][] affords instantiating a class.
+
+- Notes:
+
+    - **The instance factory does not "build" or "retain" a new instance.**
+      It does not specify applying any post-instantiation logic, as with
+      [_IocDefinition_][]. Likewise, it does not "retain" the new
+      instance as with [_IocServices_]. It only instantiates and returns.
+
+    - **The instance factory is not a resolver.** However, implementations
+      are likely to compose an [_IocResolver_][] and [_IocContainer_][] to
+      support instantiation logic.
 
 #### _IocInstanceFactory_ Methods
 
@@ -128,23 +138,22 @@ instances or new unshared instances.
     - Returns a new instance of the `$class` with `$arguments` constructor
     argument overrides.
 
-    - Notes:
-
-        - **Use this for custom factory classes.** The [_IocResolver_][]
-          needs an [_IocContainer_][] as its first parameter, this method
-          does not. In turn, that means this class probably ought to be
-          constructed with both a container and a class resolver, so that
-          this method can forward to the class resolver with the container.
-
 ### _IocServices_
 
 [_IocServices_][] affords a registry of service instances, definitions, and
 aliases.
 
+- Directives:
+
+    - Implementations MUST set an instance of an [_IocResovler_[] using a
+      $serviceName` of `IocResolver::class`.
+
 - Notes:
 
-    - **TBD** Prime the implementation with an [_IocResolver_][]
-      instance.
+    - **"Prime" the services with a resolver.** Because of the necessarily
+      circular relationship regarding service resolution, implementations
+      will need access to a pre-created [_IocResolver_][]. It may be easiest
+      to do so as part of `__construct()`.
 
 #### _IocServices_ Methods
 
@@ -193,8 +202,9 @@ aliases.
 
     - Notes:
 
-        - **TBD** Create using newDefinition() and retain for later
-          return.
+        - **Create a new definition if necessary.** In practice, this
+          likely means calling `newDefinition($serviceName)` and then
+          retaining that instance for later retrieval.
 
 - ```php
   public function newDefinition(
@@ -233,11 +243,15 @@ aliases.
         - Implementations MUST throw [_IocThrowable_][] an alias for the
           `$serviceName` is not available.
 
-        - **TBD** Recursive resolution.
+        - Implementations MUST return the final alias in the alias chain
+          for the `$serviceName`.
 
     - Notes:
 
-        - **TBD** Rescursive aliases are allowed.
+        - **Chained aliases are allowed.** That is, one alias can lead to
+          another, and that one to yet another, and so on. This means
+          implementations will have to track through those aliases to arrive
+          at a final or terminal alias for the `$serviceName`.
 
 - ```php
   public function setAlias(
@@ -249,11 +263,16 @@ aliases.
 
     - Directives:
 
-        - **TBD** Circular tracking.
+        - Implementations MUST attempt to detect if adding the `$alias` would
+          result in an infinite alias cycle; on detection, implementations
+          MUST throw [_IocThrowable_][].
 
     - Notes:
 
-        - **TBD** Rescursive aliases are allowed.
+        - **Chained aliases are allowed.** That is, one alias can lead to
+          another, and that one to yet another, and so on. To prevent an
+          infinite loop, implementations will have to track through the
+          aliases to find if the `$alias` would end up back at itself.
 
 - ```php
   public function unsetAlias(ioc_service_name_string $serviceName) : void;
@@ -275,13 +294,13 @@ and aliases to an [_IocServices_][] instance.
     - Notes:
 
         - **Provision includes a wide range of activity.** The implementation
-          can set, unset, replace, modify, etc. the instances, definitions, and
-          aliases in the `$services`.
+          can set, unset, replace, modify, etc. the instances, definitions,
+          and aliases in the `$services`.
 
 ### _IocDefinition_
 
-[_IocDefinition_][] affords building a service, including both
-instantiation and extended post-instantiation logic.
+[_IocDefinition_][] affords building a service instance, including both
+instantiation logic and extended post-instantiation logic.
 
 #### _IocDefinition_ Methods
 
@@ -340,7 +359,7 @@ instantiation and extended post-instantiation logic.
 - ```php
   public function addExtender(ioc_service_extender_callable $extender) : $this;
   ```
-    - Adds a single service extender to the builder.
+    - Adds a single post-instantiation extender for the service.
 
     - Notes:
 
@@ -350,12 +369,16 @@ instantiation and extended post-instantiation logic.
 - ```php
   public function buildInstance(IocContainer $ioc) : object;
   ```
-    - Creates and returns a new instance of the service.
+    - Builds a new instance of the service.
 
-    - Notes:
+    - Directives:
 
-        - **TBD** Instantiate (by factory or resolver) then apply extenders
-          then return.
+        - Implementations MUST instantiate the service with the defined
+          factory if one is set; otherwise, implmentations SHOULD instantiate
+          the service using an [_IocResolver_][] implementation.
+
+        - Implementation MUST apply all defined extenders to the
+          newly-instantiated service.
 
 ### _IocResolver_
 
@@ -541,7 +564,9 @@ IOC-related. It adds no class members.
 
 ## Q & A
 
-### How is Ioc-Interop different from PSR-11?
+### General
+
+#### How is Ioc-Interop different from PSR-11?
 
 [PSR-11][] is an earlier recommendation that offers an interface to `get`
 items from a container, and to see if that container `has` a particular item.
@@ -562,40 +587,67 @@ The Ioc-Interop standard is more expansive.
 - Ioc-Interop offers an [_IocInstanceFactory_][] to explicitly create new
   instances. PSR-11 offers no similar interface.
 
-- Ioc-Interop offers an [_IocServicesInterface_][] to set/get/has/unset service
+- Ioc-Interop offers an [_IocServices_][] interface to set/get/has/unset service
   instances, definitions, and aliases, separately from the container itself. PSR-11
   offers no such interface.
 
 - Ioc-Interop offers [_IocResolver_][], [_IocParametersResolver_][], and
   [_IocParameterResolver_][] interfaces. PSR-11 offers none.
 
-- Ioc-Interop offers a [_IocContainerFactory_][] interface. PSR-11 offers none.
+- Ioc-Interop offers an [_IocContainerFactory_][] interface. PSR-11 offers none.
 
 - Ioc-Interop defines one [_IocThrowable_][] interface. PSR-11 defines two
   exception marker iterfaces.
 
-### Is Ioc-Interop compatible with PSR-11?
+#### Is Ioc-Interop compatible with PSR-11?
 
 No, in the sense that the method names, signatures, and intents are different.
 
 Yes, in the sense that both may be implemented on the same class; the method
 names are different, and so are non-conflicting.
 
-### Is _IocContainer_ a Dependency Injection system or a Service Locator?
+### Container, Services, and InstanceFactory
 
-_IocContainer_ acts a Service Locator only when it is used as a dependency in
-order to retrieve other dependencies from it.
+#### Is [_IocContainer_][] a Dependency Injection system or a Service Locator?
 
-### Why does _IocContainer_ disallow non-object values?
+[_IocContainer_][] acts a Service Locator only when it is used as a dependency
+in order to retrieve other dependencies from it.
 
-TBD: To maintain conceptual integrity and consistent expectations. Given that
-`getService()` returns a shared service, and `newService()` returns a new
-instance, what does it mean to "get" a shared string value or a "new" string
-value? How then to get non-object configuration values? Create config objects as
-services. How to inject non-object values as constructor args? Consider
-_IocParameterResolver_ attributes.
+#### Why does [_IocContainer_][] disallow non-object values?
 
-### Why does _IocContainer_ define `newService()` instead of `make()`, `create()`, or `build()` ?
+Some container systems allow any kid of value: null, scalar, array, resource,
+and object. However, Ioc-Interop questions what it means, or if it is possible,
+to get a "shared" scalar or array value that works the same way as a "shared"
+object. To maintain consistent behavior expectations, Ioc-Interop limits
+services to objects.
+
+Implementors and consumers often want to keep configuration values directly
+inside a container. Ioc-Interop encourages the use of one or more configuration
+services instead.
+
+#### Why is [_IocContainer_][] separate from [_IocServices_][]?
+
+Whereas [_IocContainer_][] is for *obtaining* instances, [_IocServices_][] is for
+*registering* the instances, definitions, and aliases involved in producing the
+services to be obtained.
+
+This separation allows for containers that are fully "open" by implementing
+both interfaces on the same class, *and* for containers that are "closed" in
+the sense that the services are encapsulated but not publicly modifiable.
+
+#### Why a separate [_IocInstanceFactory_][] ?
+
+[_IocContainer_][] provides access to shared service instances, but not to new
+unshared instances. Even to, it is often useful to have access to new-instance
+functionality through an underlying [_IocResolver_][], such as when creating
+type-restricted factories or custom builders.
+
+The [_IocInstanceFactory_][] provides that functionality separately so as to
+preserve the [_IocContainer_][] concentration on *shared* services. Implementors
+wishing to combine both shared service and new instance functionality may
+implement both interfaces on the same class.
+
+### Why does [_IocInstanceFactory_][] define `newInstance()` instead of `make()`, `create()`, or `build()` ?
 
 The researched projects use several different terms to indicate that a new
 service will be returned: `build` (2 projects), `create` (3), `get` (6),
@@ -614,27 +666,117 @@ The terms `get` and `make` are ambiguous in the researched projects. They might:
 
 The terms `build` and `create` are less-ambiguous, but are much less common.
 
-In comparison, `newService()` is easily disambiguated from `getService()`.
+In comparison, `newInstance()` is easily disambiguated from `getService()`.
 Ioc-Interop stipulates that former always returns a new instance, and the latter
 always returns a shared instance (after creating it if necessary).
 
-### Why is _IocContainer_ separate from _IocServices_?
+### Service Definitions
 
-Whereas _IocContainer_ is for *obtaining* instances, _IocServices_ is for
-*registering* the instances, definitions, and aliases involved in producing the
-services to be obtained.
+#### Why an [_IocDefinition_][] at all?
 
-This separation allows for containers that are fully "open" by implementing
-both interfaces on the same class, *and* for containers that are "closed" in
-the sense that the services are encapsulated but not publicly modifiable.
+Whereas it's possible to set a pre-created service instance into a container,
+very often it's preferred to set a factory to create that instance only when
+needed. Further, sometimes that new instance may need to be modified after
+instantiation with custom extender logic. Finally, the factory might be more
+generalized instead of service-specific, as with autowiring resolvers.
 
-### Why _IocContainer_ "Factory" and not _IocContainer_ "Builder" ?
+Some projects place all that functionality directly on the container. However,
+that results in a very large API surface area. Other projects collect that
+functionality onto a "builder" object, typically called a "definition."
 
-"Builder" implies calling public setup methods, then a `build` method. "Factory"
-implies only a `new` method. Even if there are multiple steps to the factory
-process, they are not accessible as public methods.
+Ioc-Interop adopts the latter approach, not only because it separates the
+concerns of building from retrieval, but also because it gives implementors
+a natural extension point for custom building behaviors.
 
-### Why does _IocProvider_ define `provide()` instead of `register()` ?
+#### Why does [_IocDefinition_][] not support property or setter injection?
+
+Some projects functionality support the ability to set properties on the
+newly-instantiated service. Others support the ability to call "setter" or other
+methods on the newly-instantiated service.
+
+However, the APIs around this kind of functionality are different enough from
+each other that it is difficult to discern a standard. In addition, is can be
+difficult to lazily acquire the values or arguments to property-inject or
+setter-inject; the different projects support these in very different ways.
+
+As such, [_IocDefinition_][] does not directly support property injection,
+setter injection, and so on. Implementors are encouraged to add support as
+desired to their implementations.
+
+However, note that [_IocDefinition_][] does support alternative injection
+strategies *indirectly* via extenders. For example:
+
+```php
+$fooDefinition->setExtender(fn (IocContainer $ioc, Foo $foo) : Foo) {
+    // property injection
+    $foo->bar = 'bar';
+
+    // setter injection
+    $foo->setBaz('baz');
+
+    // done
+    return $foo;
+});
+```
+
+#### Why does [_IocDefinition_][] not support contextual or environmental binding?
+
+Sometimes two different classes need different implementations of the same
+interface. Functionality to specify different services to inject on the same
+typehints is relatively rare; only 2 of the researched projects support it.
+
+Another variation on this is when a class needs different implementations in
+different environments (e.g. "web" vs "cli" vs "test"). This too is relatively
+rare among the researched projects.
+
+As such, Ioc-Interop finds little to standardize on as far as an API.
+Implementors are encouraged to implement _IocParameterResolver_ attributes
+to note the specific service to inject for a specific parameter.
+
+#### Why does [_IocDefinition_][] not support lifetime scopes?
+
+Some container implementations offer service-specific "lifetimes" or "scopes" to
+determine when a service is created and destroyed. For example:
+
+- `singleton` for services that are retained across requests;
+
+- `shared` or `request-scoped` for services that is retained only for the
+  current request;
+
+- `transient` or `prototype` for a service that is created anew each time and
+  never retained.
+
+These terms are not common across the researched projects; some call a "shared"
+service a "singleton", others may not provide cross-request lifetimes, and so
+on.
+
+Ioc-Interop asserts that in a typical PHP environment, all services should be
+shared services that are retained for the duration of the current request. The
+[PHP-DI](https://github.com/PHP-DI/PHP-DI/blob/master/doc/scopes.md)
+project outlines the case. Essentially, scopes create the expectation that
+values can be recalculated on demand, when in fact they may not be. Further,
+scopes make the container act as implicitly as a factory.
+
+Consumers needing transient, prototype, or new-every-time service instances are
+encouraged to explicitly depend instead on shared factory services, perhaps ones
+that extend or encapsulate an [_IocInstanceFactory_][].
+
+Implementors desiring cross-request services are encouraged to extend their
+[_IocServices_][] implementations with the necessary logic.
+
+### Other
+
+#### Why [_IocContainerFactory_][] and not a _IocContainerBuilder_ ?
+
+A "builder" implies calling public setup methods to define a build process,
+then a `build` method to execute that process and instantiate the object. A
+"factory" implies only a `new` method, with no other public setup methods to
+define a build process.
+
+As there is no "build" process for a container, other than perhaps to provide
+services to that container, that makes the creation pattern a factory.
+
+#### Why does [_IocProvider_][] define `provide()` instead of `register()` ?
 
 The method name `register()` is by far the majority choice for service provider
 implementations. This standard breaks with that choice for consistency reasons.
@@ -647,66 +789,17 @@ interfaces herein, the word "service" should be incorporated into the method
 name. This leaves few choices:
 
 - `IocProvider::provide()` (closer to the majority class name)
-- `IocServicesRegistrant::registerServices()` (closer to the majority method name)
+- `IocRegistrant::register()` (closer to the majority method name)
 
 Ioc-Interop opts in favor of honoring the class name, and modeling the method
 name after it.
 
-### What about property and setter injection?
-
-TBD: Supported indirectly as extenders. Implementors may add support as desired,
-perhaps in their [_IocDefinition_][] implementations.
-
-## What about "action", "method", or "invoker" injection?
+#### What about "action" or "invoker" injection?
 
 TBD: "Action" or "method" injection involves using a container to call a method
-(typically a controller action method) so that the container can injecting
-services to the typehinted parameters on that method. Implementors are
-encouraged to add their own implementations.
-
-## Why an _IocDefinition_ at all?
-
-TBD: Is a place to collect all building logic: factory, autowiring, extenders.
-Also a starting point for implementors to add arguments, setter injection,
-property injection, etc. Could put these on IocServices but that expands the
-API too much.
-
-## Why _IocDefinition_ and not _IocServiceDefinition_ ?
-
-TBD: "Definition" is the only name used in the projects, when such functionality
-is offered. Ioc-Interop breaks with this in favor of the more-formal design
-pattern name "Builder".
-
-## What about contextual or environmental binding?
-
-TBD: When two different classes need different implementations of the same
-interface. Relatively rare (only 2 projects). Another variation is that a class
-needs different implementations in different environemt (e.g. web vs cli vs test).
-Ioc-Interop finds little to standardize on as far as an API. Implementors are
-encouraged to implement _IocParameterResolver_ attributes to note the specific
-service to inject for a specific parameter.
-
-## What about setter and property injection?
-
-TBD: Property injection rare; setter injection less rare but introduces other
-problems (when/how to resolve arguments?). Ioc-Interop favors constructor
-injection as all projects support it. Implementors encouraged to add setter and
-property injection on _IocDefinition_ implementations. Consumers may add
-service extenders for post-instantiation logic.
-
-## What about lifetime scopes?
-
-TBD: Ioc-Interop asserts that all services should be shared (aka "singleton" or
-"request-scoped") services. [PHP-DI](https://github.com/PHP-DI/PHP-DI/blob/master/doc/scopes.md)
-outlines the case. Consumers needing transient, prototype, or new-every-time
-service instances are encouraged to depend on shared factory services instead,
-or to build custom factories that encapsulate an implementation of
-[_IocInstanceFactory_][].
-
-## Why a separate _IocInstanceFactory_ ?
-
-TBD: No `newService()` method, but useful to have object-creation capabality
-without having to pass around *both* a container *and* a class resolver.
+(typically a controller action method) so that the container can inject services
+to the typehinted parameters on that method, then get back the result.
+Implementors are encouraged to add their own implementations.
 
 * * *
 

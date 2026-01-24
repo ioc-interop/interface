@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * [_IocDefinition_][] affords building a service, including both
- * instantiation and extended post-instantiation logic.
+ * [_IocDefinition_][] affords building a service instance, including both
+ * instantiation logic and extended post-instantiation logic.
  *
  * @phpstan-import-type ioc_service_factory_callable from IocTypeAliases
  * @phpstan-import-type ioc_service_extender_callable from IocTypeAliases
@@ -74,7 +74,7 @@ interface IocDefinition
     public function unsetExtenders() : self;
 
     /**
-     * Adds a single service extender to the builder.
+     * Adds a single post-instantiation extender for the service.
      *
      * - Notes:
      *
@@ -87,12 +87,16 @@ interface IocDefinition
     public function addExtender(callable $extender) : self;
 
     /**
-     * Creates and returns a new instance of the service.
+     * Builds a new instance of the service.
      *
-     * - Notes:
+     * - Directives:
      *
-     *     - **TBD** Instantiate (by factory or resolver) then apply extenders
-     *       then return.
+     *     - Implementations MUST instantiate the service with the defined
+     *       factory if one is set; otherwise, implmentations SHOULD instantiate
+     *       the service using an [_IocResolver_][] implementation.
+     *
+     *     - Implementation MUST apply all defined extenders to the
+     *       newly-instantiated service.
      */
     public function buildInstance(IocContainer $ioc) : object;
 }
