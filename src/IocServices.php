@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * [_IocServices_][] affords a registry of service instances, definitions, and
- * aliases.
+ * [_IocServices_][] affords a registry of service instances, definitions,
+ * and aliases.
  *
  * - Directives:
  *
@@ -19,11 +19,48 @@ namespace IocInterop\Interface;
  *       will need access to a pre-created [_IocResolver_][]. It may be easiest
  *       to do so as part of `__construct()`.
  *
+ * @phpstan-import-type ioc_service_lifetime_string from IocTypeAliases
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
  */
 interface IocServices
 {
+    /**
+     * Marks a service as shared, with a lifetime scoped to the current request.
+     *
+     * - Notes:
+     *
+     *     - **`SCOPED` is the default lifetime.** A request-scoped service
+     *       is intended to be unset at the end of the request. This is the
+     *       normal case for the PHP "shared-nothing" execution environment.
+     */
+    public const string SCOPED = 'SCOPED';
+
+    /**
+     * Marks a service as shared, with a lifetime across all requests.
+     *
+     * - Notes:
+     *
+     *     - **`SINGLETON` is a cross-request lifetime.** In a "shared-nothing"
+     *       execution environment, this is not substantially different from a
+     *       `SCOPED` lifetime. However, in a long-running process, `SINGLETON`
+     *       services are expected to stay shared across multiple requests,
+     *       whereas the `SCOPED` services are expected to be unset at the end
+     *       of a request.
+     */
+    public const string SINGLETON = 'SINGLETON';
+
+    /**
+     * Marks a service lifetime as unshared.
+     *
+     * - Notes:
+     *
+     *     - **`TRANSIENT` indicates a factoried service.** Each retrieval
+     *       of the service will return a new, unshared instance.
+     *
+     */
+    public const string TRANSIENT = 'TRANSIENT';
+
     /**
      * Has a shared instance of the `$serviceName` been set?
      *
@@ -47,12 +84,22 @@ interface IocServices
     /**
      * Sets the shared instance of the `$serviceName`.
      *
+     * - Directives:
+     *
+     *     - Implementations MUST throw [_IocThrowable_][] if the `$lifetime`
+     *       is `IocServices::TRANSIENT`.
+     *
+     *     - Implementations MUST unset the `$serviceName` for lifetimes other
+     *       than `$lifetime`.
+     *
      * @param ioc_service_name_string $serviceName
      * @param ioc_service_object $instance
+     * @param ioc_service_lifetime_string $lifetime
      */
     public function setInstance(
         string $serviceName,
         object $instance,
+        string $lifetime = IocServices::SCOPED,
     ) : void;
 
     /**
@@ -61,6 +108,13 @@ interface IocServices
      * @param ioc_service_name_string $serviceName
      */
     public function unsetInstance(string $serviceName) : void;
+
+    /**
+     * Unsets all shared instances with the specified lifetime.
+     *
+     * @param ioc_service_lifetime_string $lifetime
+     */
+    public function unsetInstances(string $lifetime) : void;
 
     /**
      * Has an [_IocDefinition_][] for the `$serviceName` been set?
@@ -119,7 +173,7 @@ interface IocServices
      *
      * - Directives:
      *
-     *     - Implementations MUST throw [_IocThrowable_][] an alias for the
+     *     - Implementations MUST throw [_IocThrowable_][] if an alias for the
      *       `$serviceName` is not available.
      *
      *     - Implementations MUST return the final alias in the alias chain

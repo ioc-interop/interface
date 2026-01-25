@@ -111,7 +111,7 @@ The projects allow different autowiring modes:
 
 When getting a service from the container, is the instance ...
 
-- shared (aka a "singleton" instance) by default; or,
+- shared (aka a "singleton" or "scoped" instance) by default; or,
 - is it a newly-created instance by default?
 
 |             | Shared | New |
@@ -910,6 +910,51 @@ These projects offer explicit programmatic property injection.
 
 Note that property injection can be accomplished with any post-instantiation
 "extender" logic.
+
+## Lifetime and Scope Terminology
+
+A service "lifetime" determines when a new service instance is created and
+released. "Lifetime" terms include:
+
+- singleton (shared across all requests)
+- scoped (shared within a single request)
+- transient (not shared; new every time)
+
+A service "scope" refers to the boundary withing which the instances are
+created and released. "Scope" terms include:
+
+- singleton (shared within all contexts)
+- prototype (not shared; new every time)
+- request (shared within the request)
+- session (shared within the session)
+
+It appears that most projects use the more generic term "shared" in a "lifetime"
+sense, not a "scoped" sense. Further, it appears many projects use the term
+"singleton" to refer to a scoped lifetime, though the `illuminate` project is
+an outlier here (in that it differentiates between "singleton" and "scoped").
+None use the term "transient", and only one uses the term "prototype", to
+indicate a new-every-time instance.
+
+|             | Shared | Singleton | Scoped | Prototype | Transient |
+| ----------- | ------ | --------- | ------ | --------- | --------- |
+| aura        | x      |           |        |           |           |
+| ghostwriter |        |           |        |           |           |
+| flightphp   |        | x         |        |           |           |
+| joomla      | x      |           |        |           |           |
+| illuminate  |        | x         | x      |           |           |
+| laminas     | x      |           |        |           |           |
+| league      | x      |           |        |           |           |
+| mindplay    |        | x         |        |           |           |
+| nette       |        |           |        |           |           |
+| phalcon     | x      |           |        |           |           |
+| phpdi       |        | x         |        |           |           |
+| pimple      |        |           |        |           |           |
+| ray         |        | x         |        | x         |           |
+| rdlowrey    | x      |           |        |           |           |
+| symfony     | x      |           |        |           |           |
+| tempest     |        | x         |        |           |           |
+| yii-di      |        |           |        |           |           |
+| yii-factory |        |           |        |           |           |
 
 * * *
 

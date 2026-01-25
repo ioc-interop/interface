@@ -7,8 +7,9 @@ namespace IocInterop\Interface;
  * [_IocDefinition_][] affords building a service instance, including both
  * instantiation logic and extended post-instantiation logic.
  *
- * @phpstan-import-type ioc_service_factory_callable from IocTypeAliases
  * @phpstan-import-type ioc_service_extender_callable from IocTypeAliases
+ * @phpstan-import-type ioc_service_factory_callable from IocTypeAliases
+ * @phpstan-import-type ioc_service_lifetime_string from IocTypeAliases
  */
 interface IocDefinition
 {
@@ -87,9 +88,30 @@ interface IocDefinition
     public function addExtender(callable $extender) : self;
 
     /**
+     * Sets the lifetime of the service.
+     *
+     * @param ioc_service_lifetime_string $lifetime
+     */
+    public function setLifetime(string $lifetime) : self;
+
+    /**
+     * Gets the lifetime of the service.
+     *
+     * - Directives:
+     *
+     *     - Implementations MUST return `IocServices::SCOPED` if the lifetime
+     *       is not otherwise set.
+     *
+     * @return ioc_service_lifetime_string
+     */
+    public function getLifetime() : string;
+
+    /**
      * Builds a new instance of the service.
      *
      * - Directives:
+     *
+     *     - Implementations MUST return a new instance.
      *
      *     - Implementations MUST instantiate the service with the defined
      *       factory if one is set; otherwise, implmentations SHOULD instantiate
@@ -97,6 +119,12 @@ interface IocDefinition
      *
      *     - Implementation MUST apply all defined extenders to the
      *       newly-instantiated service.
+     *
+     * - Notes:
+     *
+     *     - **Always return a new instance.** This method always builds an
+     *       instance, regardless of its lifetime. It is up to the caller
+     *       (typically [_IocServices_][]) to take the lifetime into account.
      */
     public function buildInstance(IocContainer $ioc) : object;
 }

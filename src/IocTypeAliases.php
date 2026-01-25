@@ -19,6 +19,11 @@ namespace IocInterop\Interface;
  *     - A `callable` for service instantiation logic.
  *
  * - ```
+ *   ioc_service_lifetime_string IocServices::SCOPED|IocServices::SINGLETON|IocServices::TRANSIENT
+ *   ```
+ *     - A `string` indicating the lifetime of a service.
+ *
+ * - ```
  *   ioc_service_name_string class-string<T>|string
  *   ```
  *     - A `class-string` or `string` name for a service.
@@ -35,6 +40,8 @@ namespace IocInterop\Interface;
  * @phpstan-type ioc_service_factory_callable callable(IocContainer,mixed[]=):object
  *
  * @phpstan-type ioc_service_name_string class-string<T>|string
+ *
+ * @phpstan-type ioc_service_lifetime_string IocServices::SCOPED|IocServices::SINGLETON|IocServices::TRANSIENT
  *
  * @phpstan-type ioc_service_object ($serviceName is class-string<T> ? T : object)
  */

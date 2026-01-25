@@ -11,7 +11,7 @@ namespace IocInterop\Interface;
  *     - **The instance factory does not "build" or "retain" a new instance.**
  *       It does not specify applying any post-instantiation logic, as with
  *       [_IocDefinition_][]. Likewise, it does not "retain" the new
- *       instance as with [_IocServices_]. It only instantiates and returns.
+ *       instance as with [_IocContainer_]. It only instantiates and returns.
  *
  *     - **The instance factory is not a resolver.** However, implementations
  *       are likely to compose an [_IocResolver_][] and [_IocContainer_][] to
