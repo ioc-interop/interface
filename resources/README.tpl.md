@@ -1,8 +1,8 @@
 # Ioc-Interop Standard Interface Package
 
 Ioc-Interop provides an interoperable package of standard interfaces for
-inversion-of-control (IOC) container functionality. It reflects, refines, and
-reconciles the common practices identified within
+inversion-of-control (IOC) service container functionality. It reflects,
+refines, and reconciles the common practices identified within
 [several pre-existing projects][README-RESEARCH.md].
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
@@ -26,243 +26,90 @@ This package defines the following interfaces:
 
 - Notes:
 
-    - **Reference implementations** may be found at <https://github.com/ioc-interop/impl>.
+    - **Reference implementations** may be found at
+      <https://github.com/ioc-interop/impl>.
 
 ## Q & A
 
-### General
-
-#### How is Ioc-Interop different from PSR-11?
+### How is Ioc-Interop different from PSR-11?
 
 [PSR-11][] is an earlier recommendation that offers an interface to `get`
 items from a container, and to see if that container `has` a particular item.
-The Ioc-Interop standard is more expansive.
 
-- Ioc-Interop is intended to contain only services (`object`). PSR-11
-  is intended to contain anything (`mixed`).
+Ioc-Interop is functionally almost identical to PSR-11. However, Ioc-Interop
+is intended to contain only services (`object`). PSR-11 is intended to contain
+anything (`mixed`).
 
-- Ioc-Interop and PSR-11 each offer a method to "get" a service. Whereas PSR-11
-  does not specify service lifetimes, Ioc-Interop specifies two kinds of shared
-  service lifetimes (`SCOPED` and `SINGLETON`) and one kind of unshared lifetime
-  (`TRANSIENT`).
+Ioc-Interop also offers an [_IocContainerFactory_][] interface, whereas PSR-11
+offers none.
 
-- Ioc-Interop and PSR-11 each offer a method to see if the container "has" a
-  service, taken to mean that the container is able to return an instance of the
-  service.
-
-- Ioc-Interop offers an [_IocInstanceFactory_][] to explicitly create new
-  instances. PSR-11 offers no similar interface.
-
-- Ioc-Interop offers an [_IocServices_][] interface to set/get/has/unset service
-  instances, definitions, and aliases, separately from the container itself.
-  PSR-11 offers no such interface.
-
-- Ioc-Interop offers [_IocResolver_][], [_IocParametersResolver_][], and
-  [_IocParameterResolver_][] interfaces. PSR-11 offers none.
-
-- Ioc-Interop offers an [_IocContainerFactory_][] interface. PSR-11 offers none.
-
-- Ioc-Interop defines one [_IocThrowable_][] interface. PSR-11 defines two
-  exception marker iterfaces.
-
-#### Is Ioc-Interop compatible with PSR-11?
+### Is Ioc-Interop compatible with PSR-11?
 
 No, in the sense that the method names, signatures, and intents are different.
 
 Yes, in the sense that both may be implemented on the same class; the method
 names are different, and so are non-conflicting.
 
-### Container, Services, and InstanceFactory
+### Why does Ioc-Interop not afford service management?
 
-#### Is [_IocContainer_][] a Dependency Injection system or a Service Locator?
+Ioc-Interop is focused on the concerns around *obtaining* and *consuming*
+services.  The affordances for *managing* and *producing* services are a set of separate concerns.
+
+Earlier drafts of Ioc-Interop were much more expansive, including a resolver
+subsystem and a service management subsystem. These have been extracted to
+separate standards, each of which is dependent on Ioc-Interop:
+
+- [Service-Interop][]
+- [Resolver-interop][]
+
+This separation helps to maintain a boundary between the needs of service
+consumers (afforded by Ioc-Interop) and service producers (afforded by
+[Service-Interop][] and [Resolver-Interop][]).
+
+Note that Ioc-Interop is independent of [Service-Interop][] and
+[Resolver-Interop][]. Ioc-Interop implementations can use them, or avoid them,
+as implementors see fit.
+
+### Is [_IocContainer_][] for Dependency Injection or is it a Service Locator?
 
 [_IocContainer_][] acts a Service Locator only when it is used as a dependency
 in order to retrieve other dependencies from it.
 
-#### Why does [_IocContainer_][] disallow non-object values?
+### Why does [_IocContainer_][] disallow non-object values?
 
-Some container systems allow any kid of value: null, scalar, array, resource,
-and object. However, Ioc-Interop questions what it means, or if it is possible,
-to get a "shared" scalar or array value that works the same way as a "shared"
-object. To maintain consistent behavior expectations, Ioc-Interop limits
-services to objects.
+[_IocContainer_][] is explicitly a *service* container, not a general config
+container for [scalar][] or [array][] values. (Ioc-Interop questions what it
+means, or if it is possible, to get a "shared" scalar or array that works the
+same as a "shared" object.) Limiting services to objects helps maintain
+consistent expectations regarding service types and behavior.
 
-Implementors and consumers often want to keep configuration values directly
-inside a container. Ioc-Interop encourages the use of one or more configuration
-services instead.
+Ioc-Interop recognizes that implementors and consumers often want to make config
+values easily available. Instead of storing config values directly inside a
+container, Ioc-Interop encourages the use of one or more config services or
+value objects to make those values available.
 
-#### Why is [_IocContainer_][] separate from [_IocServices_][]?
+### Why does [_IocContainer_][] define `getService()` and not just `get()` ?
 
-Whereas [_IocContainer_][] is for *obtaining* instances, [_IocServices_][] is
-for *registering* the instances, definitions, and aliases involved in producing
-the services to be obtained.
-
-This separation allows for containers that are fully "open" by implementing
-both interfaces on the same class, *and* for containers that are "closed" in
-the sense that the services are encapsulated but not publicly modifiable.
-
-#### Why a separate [_IocInstanceFactory_][] ?
-
-Although [_IocContainer_][] provides access to service instances, both new and
-unshared, it is often useful to have access to new-instance functionality
-through an underlying [_IocResolver_][], such as when creating type-restricted
-factories or custom builders with arguments specified at call-time. The
-[_IocInstanceFactory_][] provides that functionality.
-
-#### Why does [_IocInstanceFactory_][] define `newInstance()` instead of `make()`, `create()`, or `build()` ?
-
-The researched projects use several different terms to indicate that a
-newly-instantiated object may be returned: `build` (2 projects), `create` (3),
-`get` (6), `make` (3), and `new` (2).
-
-The terms `get` and `make` are ambiguous in the researched projects. Depending
-on a particular service definition, they might:
-
-- create a new instance every time;
-
-- return a shared instance every time;
-
-- create a new service the first time and return that same instance
-  every time thereafter; or,
-
-- do some combination of the above, depending how the service was defined.
-
-The terms `build` and `create` are less-ambiguous, but are much less common.
-
-In comparison, `newInstance()` is easily disambiguated from `getService()`.
-Ioc-Interop stipulates that former always returns a new instance, and the latter
-returns an instance as defined by the service (typically but not always shared).
-
-### Service Definitions
-
-#### Why an [_IocDefinition_][] at all?
-
-Whereas it's possible to set a pre-created service instance into a container,
-very often it's preferred to set a factory to create that instance only when
-needed. Further, sometimes that new instance may need to be modified after
-instantiation with custom extender logic. The factory might be more generalized
-instead of service-specific, as with autowiring resolvers. Finally, the service
-lifetime might be shared, or always-new.
-
-Some projects place all that functionality directly on the container. However,
-that results in a very large API surface area. Other projects collect that
-functionality onto a "builder" object, typically called a "definition."
-
-Ioc-Interop adopts the latter approach, not only because it separates the
-concerns of building from retrieval, but also because it gives implementors
-a natural extension point for custom building behaviors.
-
-#### Why does [_IocDefinition_][] not support property or setter injection?
-
-Some projects functionality support the ability to set properties on the
-newly-instantiated service. Others support the ability to call "setter" or other
-methods on the newly-instantiated service.
-
-However, the APIs around this kind of functionality are different enough from
-each other that it is difficult to discern a standard. In addition, is can be
-difficult to lazily acquire the values or arguments to property-inject or
-setter-inject; the different projects support these in very different ways.
-
-As such, [_IocDefinition_][] does not directly support property injection,
-setter injection, and so on. Implementors are encouraged to add support as
-desired to their implementations.
-
-However, note that [_IocDefinition_][] does support alternative injection
-strategies *indirectly* via extenders. For example:
-
-```php
-$services->getDefinition(Foo::class)
-    ->setExtender(function (IocContainer $ioc, Foo $foo) : Foo {
-        // property injection
-        $foo->bar = 'bar';
-
-        // setter injection
-        $foo->setBaz('baz');
-
-        // done
-        return $foo;
-    });
-```
-
-#### Why does [_IocDefinition_][] not support contextual or environmental binding?
-
-Sometimes two different classes need different implementations of the same
-interface. Functionality to specify different services to inject on the same
-typehints is relatively rare; only 2 of the researched projects support it.
-
-Another variation on this is when a class needs different implementations in
-different environments (e.g. "web" vs "cli" vs "test"). This too is relatively
-rare among the researched projects.
-
-As such, Ioc-Interop finds little to standardize on as far as an API.
-Implementors are encouraged to implement _IocParameterResolver_ attributes
-to note the specific service to inject for a specific parameter.
-
-#### Why `TRANSIENT` instead of `PROTOTYPE` for always-new services?
-
-Neither term appears prominently in the research; "prototype" appears only once,
-and "transient" never.
-
-However, other research indicates that the term "transient" is more associated
-with lifetimes, and "prototype" more with scopes. As Ioc-Interop uses lifetime
-terms, "transient" is more appropriate.
-
-### Other
-
-#### Why an [_IocContainerFactory_][] and not a _IocContainerBuilder_ ?
-
-A "builder" implies calling public setup methods to define a build process,
-then a `build` method to execute that process and instantiate the object. A
-"factory" implies only a `new` method, with no other public setup methods to
-define a build process.
-
-As there is no "build" process for a container, other than perhaps to provide
-services to that container, that makes the creation pattern a factory.
-
-#### Why does [_IocProvider_][] define `provide()` instead of `register()` ?
-
-The method name `register()` is by far the majority choice for service provider
-implementations. This standard breaks with that choice for consistency reasons.
-
-Ioc-Interop opines that, unless the result is outright barbarous,
-interface names and method names should mimic each other. Given a _Provider_
-interface, its methods should `provide()`; given a `register()` method, its
-interface should be a _Registry_ or _Registrant_. Further, as with the other
-interfaces herein, the word "service" should be incorporated into the method
-name. This leaves few choices:
-
-- `IocProvider::provide()` (closer to the majority class name)
-- `IocRegistrant::register()` (closer to the majority method name)
-
-Ioc-Interop opts in favor of honoring the class name, and modeling the method
-name after it.
-
-#### What about "action" or "invoker" injection?
-
-TBD: "Action" or "method" injection involves using a container to call a method
-(typically a controller action method) so that the container can inject services
-to the typehinted parameters on that method, then get back the result.
-Implementors are encouraged to add their own implementations.
+The vast majority of researched projects, whether PSR-11 conforming or not, use
+the method name `get()`. Contra the research, Ioc-Interop asserts that `get()`
+is too generic, and that the method name should hint at what is being gotten;
+thus, `getService()`.
 
 * * *
 
-[_Attribute_]: https://www.php.net/attribute
 [_Exception_]: https://php.net/Exception
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
-[_IocDefinition_]: #iocservicebuilder
-[_IocInstanceFactory_]: #iocinstancefactory
-[_IocParameterResolver_]: #iocparameterresolver
-[_IocParametersResolver_]: #iocparametersresolver
-[_IocProvider_]: #iocservicesprovider
-[_IocResolver_]: #iocserviceresolver
-[_IocServices_]: #iocservices
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
-[_ReflectionNamedType_]: https://www.php.net/ReflectionNamedType
 [_Throwable_]: https://php.net/Throwable
 [BCP 14]: https://www.rfc-editor.org/info/bcp14
 [PSR-11]: https://www.php-fig.org/psr/psr-11/
 [README-RESEARCH.md]: ./README-RESEARCH.md
+[Resolver-Interop]: https://github.com/resolver-interop/interface
 [RFC 2119]: https://datatracker.ietf.org/doc/html/rfc2119
 [RFC 8174]: https://datatracker.ietf.org/doc/html/rfc8174
+[Service-Interop]: https://github.com/service-interop/interface
+[scalar]: https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.atomic.scalar
+[array]: https://www.php.net/manual/en/language.types.array.php
+[resource]: https://www.php.net/manual/en/language.types.resource.php
