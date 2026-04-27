@@ -177,7 +177,7 @@ service types and behavior. Of the researched projects, 10 return `object`, and
 Ioc-Interop recognizes that implementors and consumers often want to make config
 values easily available, though Ioc-Interop questions what it means (or if it
 is possible) to get a "shared" scalar or array that works the same as a "shared"
-object).
+object.
 
 With that in mind, Ioc-Interop encourages the use of one or more config services
 or value objects to make those values available, instead of storing config
