@@ -7,7 +7,7 @@ namespace IocInterop\Interface;
  * [_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
  *
  * - ```
- *   ioc_service_name_string class-string<T>|string
+ *   ioc_service_name_string class-string<T>|non-empty-string
  *   ```
  *     - A `class-string` or `string` name for a service.
  *
@@ -18,7 +18,7 @@ namespace IocInterop\Interface;
  *
  * @template T of object
  *
- * @phpstan-type ioc_service_name_string class-string<T>|string
+ * @phpstan-type ioc_service_name_string class-string<T>|non-empty-string
  *
  * @phpstan-type ioc_service_object ($serviceName is class-string<T> ? T : object)
  */
