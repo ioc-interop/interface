@@ -9,6 +9,9 @@
             "email": "pmjones@pmjones.io"
         }
     ],
+    "require": {
+        "php": ">=8.4"
+    },
     "autoload": {
         "psr-4": {
             "IocInterop\\Interface\\": "./src"
@@ -17,10 +20,15 @@
     "require-dev": {
         "pds/composer-script-names": "^1.0",
         "pds/skeleton": "^1.0",
-        "phpstan/phpstan": "^2.0"
+        "phpstan/phpstan": "^2.0",
+        "star-interop/stardoc": "1.x-dev",
+        "pmjones/php-styler": "0.x@dev"
     },
     "scripts": {
-        "analyze": "./vendor/bin/phpstan analyze -c phpstan.neon",
-        "check": "composer analyze"
+        "analyze": "./vendor/bin/phpstan",
+        "check": "composer analyze && composer cs-clear && composer cs-check",
+        "cs-fix": "./vendor/bin/php-styler apply",
+        "cs-check": "./vendor/bin/php-styler check",
+        "cs-clear": "./vendor/bin/php-styler clear-cache"
     }
 }
