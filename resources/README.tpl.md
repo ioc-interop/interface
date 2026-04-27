@@ -78,15 +78,20 @@ in order to retrieve other dependencies from it.
 ### Why does [_IocContainer_][] disallow non-object values?
 
 [_IocContainer_][] is explicitly a *service* container, not a general config
-container for [scalar][] or [array][] values. (Ioc-Interop questions what it
-means, or if it is possible, to get a "shared" scalar or array that works the
-same as a "shared" object.) Limiting services to objects helps maintain
-consistent expectations regarding service types and behavior.
+container for [scalar][] or [array][] values.
+
+Limiting services to objects helps maintain consistent expectations regarding
+service types and behavior. Of the researched projects, 10 return `object`, and
+8 return `mixed`, so this restriction is consistent with the majority.
 
 Ioc-Interop recognizes that implementors and consumers often want to make config
-values easily available. Instead of storing config values directly inside a
-container, Ioc-Interop encourages the use of one or more config services or
-value objects to make those values available.
+values easily available, though Ioc-Interop questions what it means (or if it
+is possible) to get a "shared" scalar or array that works the same as a "shared"
+object).
+
+With that in mind, Ioc-Interop encourages the use of one or more config services
+or value objects to make those values available, instead of storing config
+values directly inside a container.
 
 ### Why does [_IocContainer_][] define `getService()` and not just `get()` ?
 
