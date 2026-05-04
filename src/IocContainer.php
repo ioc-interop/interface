@@ -23,7 +23,7 @@ interface IocContainer
      * - Notes:
      *
      *     - **The logic for this method is expressly unspecified.** The ability
-     *       check may accomplished by querying a service management subsystem,
+     *       check may be accomplished by querying a service management subsystem,
      *       or by some other means.
      *
      * @param ioc_service_name_string $serviceName

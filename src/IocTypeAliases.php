@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace IocInterop\Interface;
 
 /**
- * [_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
+ * [_IocTypeAliases_][] provides custom PHPStan types to aid static analysis.
  *
  * - ```
  *   ioc_service_name_string class-string<T>|non-empty-string
