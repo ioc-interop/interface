@@ -4,6 +4,7 @@ Ioc-Interop is based on research into the following projects that provide
 inversion-of-control containers:
 
 - [aura/di](https://github.com/auraphp/Aura.Di) (aura)
+- [level-2/dice](https://github.com/Level-2/Dice) (dice)
 - [flightphp/container](https://github.com/flightphp/container) (flightphp)
 - [ghostwriter/container](https://github.com/ghostwriter/container) (ghostwriter)
 - [illuminate/container](https://github.com/illuminate/container) (illuminate)
@@ -26,7 +27,16 @@ inversion-of-control containers:
 >
 > The `yii` projects are unusual, in that they keep shared service functionality
 > in a `di` package, but keep new-instance functionality in a separate `factory`
-> package.
+> package. Yii also ships `yiisoft/injector` (callable-argument injection) and
+> `yiisoft/definitions` (service-definition objects); neither is a container by
+> itself, so they are out of scope here.
+
+> **Note:**
+>
+> `dice` is unique among the surveyed containers in being immutable: each
+> call to `Dice::addRule()` or `Dice::addRules()` clones the container and
+> returns the modified copy, leaving the original unchanged. Configuration
+> must be reassigned (`$dice = $dice->addRule(...)`).
 
 The following projects were considered but eventually excluded because they use
 external container systems:
@@ -56,6 +66,7 @@ no obvious or discernible container system:
 |             | Yes | Opt | Ish | No |
 | ----------- | --- | --- | --- | -- |
 | aura        | x   |     |     |    |
+| dice        |     |     |     | x  |
 | ghostwriter |     |     |     | x  |
 | flightphp   |     |     | x   |    |
 | joomla      | x   |     |     |    |
@@ -68,14 +79,21 @@ no obvious or discernible container system:
 | phpdi       | x   |     |     |    |
 | pimple      |     | x   |     |    |
 | ray         |     |     |     | x  |
-| rdlowrey    | x   |     |     |    |
+| rdlowrey    |     |     |     | x  |
 | symfony     | x   |     |     |    |
 | tempest     |     |     |     | x  |
 | yii-di      | x   |     |     |    |
 | yii-factory |     |     |     | x  |
 
-11 projects offer a conforming PSR-11 signatures; 7 offer modified or
+10 projects offer a conforming PSR-11 signature; 9 offer modified or
 non-conforming PSR-11 method signature.
+
+> **Note:**
+>
+> The "Opt" projects offer PSR-11 conformance via wrapper classes:
+>
+> - `phalcon` — `Phalcon\Container` delegates `get()` to `Phalcon\Di::getShared()`.
+> - `pimple` — `Pimple\Psr11\Container` delegates `get()` to `Pimple\Container::offsetGet()`.
 
 ## Service Types
 
@@ -85,6 +103,7 @@ indicates these projects return these types from the container:
 |             | `object` | `mixed` |
 | ----------- | -------- | ------- |
 | aura        | x        |         |
+| dice        | x        |         |
 | flightphp   | x        |         |
 | ghostwriter | x        |         |
 | illuminate  |          | x       |
@@ -105,7 +124,7 @@ indicates these projects return these types from the container:
 
 1. `symfony` is `?object`.
 
-10 of the projects return objects; 8 return anything at all.
+11 of the projects return objects; 8 return anything at all.
 
 ## Has a service
 
@@ -115,6 +134,7 @@ meaning is slightly different between them all.
 |             | Signature                                                           | Meaning                                                   |
 | ----------- | ------------------------------------------------------------------- | --------------------------------------------------------- |
 | aura        | `has(string $id) : bool`                                            | "Does a service definition exist?"                        |
+| dice        | -                                                                   | -                                                         |
 | flightphp   | `has(string $id) : bool`                                            | "Is an entry key set for $id?"                            |
 | ghostwriter | `has(string $id) : bool`                                            | "Does get() return a service?"                            |
 | illuminate  | `has(string $id) : bool`                                            | "Has $id been bound?"                                     |
@@ -145,42 +165,55 @@ shared instance, and you won't know from the call-site.
 |             | Service-Defined Lifetime |  Signature |
 | ----------- | ------------------------ | ---------- |
 | aura        |                          | `get(string $id) : object` |
-| flightphp   | x (1)                    | `get(string $id) : object` |
+| dice        | x (1)                    | `create(string $name, array $args = [], array $share = []) : object` |
+| flightphp   | x (2)                    | `get(string $id) : object` |
 | ghostwriter |                          | `get(string $id) : object` |
-| illuminate  | x (2)                    | `get(string $id) : ($id is class-string<TClass> ? TClass : mixed)` |
-| joomla      | x (3)                    | `get($resourceName) : mixed` |
+| illuminate  | x (3)                    | `get(string $id) : ($id is class-string<TClass> ? TClass : mixed)` |
+| joomla      | x (4)                    | `get($resourceName) : mixed` |
 | laminas     |                          | `get(string $name) : object` |
-| league      | x (4)                    | `get(string $id) : mixed` |
+| league      | x (5)                    | `get(string $id) : mixed` |
 | mindplay    |                          | `get(string $name) : ($name is class-string<T> ? T : mixed)` |
 | nette       |                          | `getService(string $name) : object` |
-| phalcon     | x (5)                    | `getShared(string $name, $parameters = null) : object` |
+| phalcon     | x (6)                    | `get(string $name, $parameters = null) : mixed` |
 | phpdi       |                          | `get(string $id) : mixed` |
-| pimple      | x (6)                    | `offsetGet(string $id) : mixed` |
+| pimple      | x (7)                    | `offsetGet(string $id) : mixed` |
 | ray         |                          | `getInstance($interface, $name = Name::ANY)` |
-| rdlowrey    | x (7)                    | `make($name, array $args = array()) : mixed` |
+| rdlowrey    | x (8)                    | `make($name, array $args = array()) : mixed` |
 | symfony     |                          | `get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE) : ?object` |
-| tempest     | x (8)                    | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
+| tempest     | x (9)                    | `get(string $className, null\|string\|UnitEnum $tag = null, mixed ...$params) : object` |
 | yii-di      |                          | `get(string $id) : ($id is class-string ? T : mixed)` |
 | yii-factory |                          | - |
 
-1. `flightphp` will return a new instance unless the service was set as a `singleton()`.
+1. `dice` will return a new instance unless the service's rule sets
+    `'shared' => true`. The `$share` parameter is unique among the surveyed
+    containers: it specifies instances to share only within the current
+    construction subtree, not at the container level.
 
-2. `illuminate` will return a new instance unless the service was ...
+2. `flightphp` will return a new instance unless the service was set as a `singleton()`.
+
+3. `illuminate` will return a new instance unless the service was ...
     - registered as a shared service via `singleton($abstract, $concrete = null)`
     - set directly as a shared service via `instance($abstract, $instance)`
     - bound with `$shared = true`: `bind($abstract, $concrete = null, $shared = false)`
 
-3. `joomla` will return a new instance unless the service was defined as shared.
+4. `joomla` will return a new instance unless the service was defined as shared.
 
-4. `league` will return a new instance unless the service was set as shared.
+5. `league` will return a new instance unless the service was set as shared.
 
-5. `phalcon` will return a new instance unless the service was set as shared.
+6. `phalcon` will return a new instance unless the service was set as shared.
+    `phalcon\Di` also offers `getShared(string $name, $parameters = null) : mixed`,
+    which always returns the shared instance regardless of the service's lifetime
+    configuration. `phalcon\Di` further implements `ArrayAccess`, with
+    `offsetGet` aliasing `getShared` and `offsetExists` aliasing `has`.
 
-6. `pimple` will return a new instance if the service was set as a `factory()`
+7. `pimple` will return a new instance if the service was set as a `factory()`
 
-7. `rdlowrey` will return a new instance unless the service was set as shared, in which case the `$args` are ignored.
+8. `rdlowrey` will return a new instance unless the service was set as shared, in which case the `$args` are ignored.
 
-8. `tempest` will return a new instance unless the service was set as shared.
+9. `tempest` will return a new instance unless the service was set as shared.
+
+`phpdi` also offers `make(string $name, array $parameters = []) : mixed` to
+bypass caching and return a new instance.
 
 ## Creating the container itself
 
@@ -189,6 +222,7 @@ Very few of the researched projects offer a factory or builder for the container
 |             | Class | Method |
 | ----------- | ----- | ------ |
 | aura        | _ContainerBuilder_ | `newConfiguredInstance(array $configClasses = [], bool $autoResolve = false) : Container` |
+| dice        | - | - |
 | flightphp   | - | - |
 | ghostwriter | - | - |
 | illuminate  | - | - |
