@@ -1,5 +1,8 @@
 # Ioc-Interop Standard Interface Package
 
+[![PDS Skeleton](https://img.shields.io/badge/pds-skeleton-blue.svg?style=flat-square)](https://github.com/php-pds/skeleton)
+[![PDS Composer Script Names](https://img.shields.io/badge/pds-composer--script--names-blue?style=flat-square)](https://github.com/php-pds/composer-script-names)
+
 Ioc-Interop provides an interoperable package of standard interfaces for
 inversion-of-control (IOC) service container functionality. It reflects,
 refines, and reconciles the common practices identified within
@@ -8,6 +11,8 @@ refines, and reconciles the common practices identified within
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be
 interpreted as described in [BCP 14][] ([RFC 2119][], [RFC 8174][]).
+
+This package attempts to adhere to the [Package Development Standards](https://php-pds.com/) approach to [naming and versioning](https://php-pds.com/#naming-and-versioning).
 
 ## Interfaces
 
@@ -19,7 +24,7 @@ This package defines the following interfaces:
 
 - [_IocThrowable_][] extends [_Throwable_][] to mark an [_Exception_][] as IOC-related.
 
-- [_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
+- [_IocTypeAliases_][] provides custom PHPStan types to aid static analysis.
 
 ### _IocContainer_
 
@@ -41,7 +46,7 @@ This package defines the following interfaces:
     - Notes:
 
         - **The logic for this method is expressly unspecified.** The ability
-          check may accomplished by querying a service management subsystem,
+          check may be accomplished by querying a service management subsystem,
           or by some other means.
 
 - ```php
@@ -95,7 +100,7 @@ It adds no class members.
 
 ### _IocTypeAliases_
 
-[_IocTypeAliases_][] defines PHPStan type aliases to aid static analysis.
+[_IocTypeAliases_][] provides custom PHPStan types to aid static analysis.
 
 - ```
   ioc_service_name_string class-string<T>|non-empty-string
@@ -109,15 +114,11 @@ It adds no class members.
 
 ## Implementations
 
-- Directives:
+Implementations MAY define additional class members not defined in these interfaces.
 
-    - Implementations MAY define additional class members not defined in these
-      interfaces.
+Notes:
 
-- Notes:
-
-    - **Reference implementations** may be found at
-      <https://github.com/ioc-interop/impl>.
+- **Reference implementations** are available at <https://github.com/ioc-interop/impl>.
 
 ## Q & A
 
@@ -150,7 +151,7 @@ subsystem and a service management subsystem. These have been extracted to
 separate standards, each of which is dependent on Ioc-Interop:
 
 - [Service-Interop][]
-- [Resolver-interop][]
+- [Resolver-Interop][]
 
 This separation helps to maintain a boundary between the needs of service
 consumers (afforded by Ioc-Interop) and service producers (afforded by
@@ -198,7 +199,7 @@ thus, `getService()`.
 [_IocThrowable_]: #iocthrowable
 [_IocTypeAliases_]: #ioctypealiases
 [_Throwable_]: https://php.net/Throwable
-[BCP 14]: https://www.rfc-editor.org/info/bcp14
+[BCP 14]: https://datatracker.ietf.org/doc/bcp14/
 [PSR-11]: https://www.php-fig.org/psr/psr-11/
 [README-RESEARCH.md]: ./README-RESEARCH.md
 [Resolver-Interop]: https://github.com/resolver-interop/interface
