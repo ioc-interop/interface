@@ -144,7 +144,7 @@ names are different, and so are non-conflicting.
 ### Why does Ioc-Interop not afford service management?
 
 Ioc-Interop is focused on the concerns around *obtaining* and *consuming*
-services.  The affordances for *managing* and *producing* services are a set of separate concerns.
+services. The affordances for *managing* and *producing* services are a set of separate concerns.
 
 Earlier drafts of Ioc-Interop were much more expansive, including a resolver
 subsystem and a service management subsystem. These have been extracted to
@@ -163,7 +163,7 @@ as implementors see fit.
 
 ### Is [_IocContainer_][] for Dependency Injection or is it a Service Locator?
 
-[_IocContainer_][] acts a Service Locator only when it is used as a dependency
+[_IocContainer_][] acts as a Service Locator only when it is used as a dependency
 in order to retrieve other dependencies from it.
 
 ### Why does [_IocContainer_][] disallow non-object values?
@@ -184,7 +184,7 @@ With that in mind, Ioc-Interop encourages the use of one or more config services
 or value objects to make those values available, instead of storing config
 values directly inside a container.
 
-### Why does [_IocContainer_][] define `getService()` and not just `get()` ?
+### Why does [_IocContainer_][] define `getService()` and not just `get()`?
 
 The vast majority of researched projects, whether PSR-11 conforming or not, use
 the method name `get()`. Contra the research, Ioc-Interop asserts that `get()`
@@ -208,4 +208,3 @@ thus, `getService()`.
 [Service-Interop]: https://github.com/service-interop/interface
 [scalar]: https://www.php.net/manual/en/language.types.type-system.php#language.types.type-system.atomic.scalar
 [array]: https://www.php.net/manual/en/language.types.array.php
-[resource]: https://www.php.net/manual/en/language.types.resource.php
