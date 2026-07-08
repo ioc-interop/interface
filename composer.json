@@ -3,10 +3,14 @@
     "description": "Interoperable IOC container interfaces for PHP.",
     "type": "library",
     "license": "MIT",
+    "keywords": ["ioc", "container", "service", "di", "dependency injection"],
+    "homepage": "https://github.com/ioc-interop/interface",
     "authors": [
         {
             "name": "Paul M. Jones",
-            "email": "pmjones@pmjones.io"
+            "email": "pmjones@pmjones.io",
+            "homepage": "https://pmjones.io",
+            "role": "Lead"
         }
     ],
     "require": {
