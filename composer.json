@@ -1,9 +1,9 @@
 {
     "name": "ioc-interop/interface",
-    "description": "Interoperable IOC container interfaces for PHP.",
     "type": "library",
-    "license": "MIT",
+    "description": "Interoperable IOC container interfaces for PHP.",
     "keywords": ["ioc", "container", "service", "di", "dependency injection"],
+    "license": "MIT",
     "homepage": "https://github.com/ioc-interop/interface",
     "authors": [
         {
@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "IocInterop\\Interface\\": "./src"
+            "IocInterop\\Interface\\": "src/"
         }
     },
     "require-dev": {
