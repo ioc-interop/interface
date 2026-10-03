@@ -33,33 +33,68 @@ This package defines the following interfaces:
 - Notes:
 
     - **This interface does not afford service management.** The container
-      will need to obtain services somehow, e.g. from a [Service-Interop][]
-      implementation.
+      will need to create and retain services somehow, whether by itself,
+      through a [Service-Interop][] implementation, or some other means.
 
 #### _IocContainer_ Methods
 
 - ```php
   public function hasService(ioc_service_name_string $serviceName) : bool;
   ```
-    - Is the container able to return an instance of the `$serviceName`?
+    - Might the container return an object for the `$serviceName`?
+
+    - Directives:
+
+        - Implementations MUST return `false` only when the container
+          knows in advance that `getService()` will not be able to
+          return an object for the `$serviceName`.
+
+        - Implementations MUST NOT produce a service, by instantiation or
+          any other means, in order to answer.
 
     - Notes:
 
-        - **The logic for this method is expressly unspecified.** The ability
-          check may be accomplished by querying a service management subsystem,
-          or by some other means.
+        - **The logic for this method is expressly unspecified.** The check
+          may be accomplished by querying a service management subsystem, or
+          by some other means.
+
+        - **A `false` result is conclusive; a `true` result is not.** Some
+          failures are knowable in advance, as when the container has
+          nothing it could use to produce an object for the name. A
+          `false` result means the container found such a failure, and
+          `getService()` will throw [_IocThrowable_][]. Other failures
+          surface only on the attempt, when the means exists but its
+          dependencies or its configuration do not. A `true` result
+          promises nothing: the container may have checked and found no
+          obstacle, or it may not have checked at all. Either result
+          speaks only of the call that produced it; a container whose
+          state changes may answer differently next time.
+
+        - **Every path by which `getService()` could succeed needs a
+          matching check here.** The directive binds this method to what
+          `getService()` could do, and `getService()` might do a great
+          deal: look in a registry, consult a service management
+          subsystem, autowire from a class name. Adding a path to
+          `getService()` without adding a corresponding check in
+          `hasService()` leaves the container returning `false` for a
+          service it can in fact produce.
 
 - ```php
   public function getService(
       ioc_service_name_string $serviceName,
   ) : ioc_service_object;
   ```
-    - Returns an instance of the `$serviceName`.
+    - Returns an object for the `$serviceName`.
 
     - Directives:
 
         - Implementations MUST throw [_IocThrowable_][] if the container
-          cannot return an instance of the `$serviceName`.
+          cannot return an object for the `$serviceName`, regardless of the
+          underlying cause.
+
+        - When an [_Error_][] or [_Exception_][] caused the container to
+          fail, implementations MUST retain it as the previous exception of
+          the [_IocThrowable_][].
 
     - Notes:
 
@@ -67,9 +102,36 @@ This package defines the following interfaces:
           may be accomplished via a service management subsystem, or by some
           other means.
 
+        - **The service name is arbitrary, but it can determine the return
+          type.** Any non-empty string will serve: `'db.replica'` is as
+          valid a name as `\Foo\Bar::class`. However, when the name is a
+          class-string, the `ioc_service_object` return type resolves to
+          that class rather than to `object`.
+
+        - **The narrowed return type is not a runtime guarantee.**
+          Nothing requires a service to be an instance of the class its
+          name denotes; the narrowing is what static analysis infers,
+          not what the container promises. A caller that needs the
+          guarantee has `instanceof` for it.
+
+        - **Static analysis treats a name that could be a class name as
+          one.** It looks for the class, not for the intent behind the
+          label: `'logger'` is a class-string wherever a `Logger` class
+          exists, case notwithstanding. Where a service is not an
+          instance of its namesake, a name that cannot be a class name
+          avoids the narrowing; a dot, as in `'db.replica'`, is enough.
+
         - **The returned instance may be new or shared.** The retrieval
           logic defines the service lifetime, not the container (per se) and
           not the caller requesting the service.
+
+        - **Catching only [_Exception_][] is not enough.** Consumer-supplied
+          factories and constructors can raise an [_Error_][] as readily,
+          and anything an implementation does not catch will escape as
+          something other than an [_IocThrowable_][]. The `return`
+          statement is itself a throw site: a non-object value fails the
+          declared return type and raises an [_Error_][] from inside the
+          method, where only an enclosing `try` catches it.
 
 ### _IocContainerFactory_
 
@@ -83,6 +145,10 @@ This package defines the following interfaces:
   ```
     - Returns a new instance of [_IocContainer_][].
 
+    - Directives:
+
+        - Every call MUST return a new instance of [_IocContainer_][].
+
     - Notes:
 
         - **Container instantiation logic is not specified.** Implementations
@@ -90,6 +156,13 @@ This package defines the following interfaces:
           collection, or some other means to create and populate a container.
           Implementations might also choose to return a compiled or otherwise
           reconstituted container.
+
+        - **A new container instance does not necessarily contain new service
+          instances.** Whether two containers return the same object for a
+          given service name is a matter of service lifetime, which the
+          retrieval logic defines. A container drawing on a shared service
+          registry, or delegating to a parent container, may hand out the
+          same instance as another.
 
 ### _IocThrowable_
 
@@ -103,9 +176,9 @@ It adds no class members.
 [_IocTypeAliases_][] provides custom PHPStan types to aid static analysis.
 
 - ```
-  ioc_service_name_string class-string<T>|non-empty-string
+  ioc_service_name_string non-empty-string
   ```
-    - A `class-string` or `string` name for a service.
+    - A `class-string` or non-empty `string` name for a service.
 
 - ```
   ioc_service_object ($serviceName is class-string<T> ? T : object)
@@ -144,7 +217,8 @@ names are different, and so are non-conflicting.
 ### Why does Ioc-Interop not afford service management?
 
 Ioc-Interop is focused on the concerns around *obtaining* and *consuming*
-services. The affordances for *managing* and *producing* services are a set of separate concerns.
+services. The affordances for *managing* and *producing* services are
+separate concerns.
 
 Earlier drafts of Ioc-Interop were much more expansive, including a resolver
 subsystem and a service management subsystem. These have been extracted to
@@ -172,7 +246,7 @@ in order to retrieve other dependencies from it.
 container for [scalar][] or [array][] values.
 
 Limiting services to objects helps maintain consistent expectations regarding
-service types and behavior. Of the researched projects, 10 return `object`, and
+service types and behavior. Of the researched projects, 11 return `object`, and
 8 return `mixed`, so this restriction is consistent with the majority.
 
 Ioc-Interop recognizes that implementors and consumers often want to make config
@@ -184,6 +258,26 @@ With that in mind, Ioc-Interop encourages the use of one or more config services
 or value objects to make those values available, instead of storing config
 values directly inside a container.
 
+### Why does a `class-string` name not guarantee an instance of that class?
+
+When the `$serviceName` is a `class-string`, the `ioc_service_object` return
+type resolves to that class. It would seem to follow that `getService()`
+should be required to return an instance of it.
+
+It cannot be required, because whether a name *is* a `class-string` is not a
+property of the name. Static analysis answers that question by looking for a
+class of that name in the codebase being analyzed, case-insensitively. A
+service labeled `logger` is a `class-string` in a project that happens to
+define a `Logger` class, and a plain string in one that does not; the same
+call means different things in different codebases. A directive whose
+applicability varies that way cannot be implemented, because the container
+has no way to know which case it is in.
+
+Of the researched projects, Laravel's container and yiisoft/di narrow the
+return type on a `class-string` name in exactly this way, and neither
+requires the returned object to be an instance of it. Aura.Di and Nette DI
+decline to narrow at all, returning `object` from their name-keyed methods.
+
 ### Why does [_IocContainer_][] define `getService()` and not just `get()`?
 
 The vast majority of researched projects, whether PSR-11 conforming or not, use
@@ -191,8 +285,45 @@ the method name `get()`. Contra the research, Ioc-Interop asserts that `get()`
 is too generic, and that the method name should hint at what is being gotten;
 thus, `getService()`.
 
+### Why does Ioc-Interop offer an [_IocContainerFactory_][]?
+
+Container-creation logic is a minority position among the researched projects:
+only four offer any way to create the container itself, and each does so with a
+different signature.
+
+Contra the research, Ioc-Interop asserts that container *creation* is a
+separate concern from container *use*, and thus deserves an interface of its
+own. Separating them affords creating a container more than once: per request
+or per job in a long-running runtime, per test case, or per tenant.
+
+Implementing [_IocContainerFactory_][] is optional. Service consumers should
+typehint on [_IocContainer_][].
+
+### Why must every failure throw an [_IocThrowable_][]?
+
+None of the researched projects do so. Every one of them lets an exception
+from a consumer-supplied factory or constructor propagate unchanged, and
+throws a container exception only for failures it detects itself, such as an
+unknown name or an unresolvable dependency.
+
+Contra the research, Ioc-Interop asserts that a consumer calling
+`getService()` should have exactly one thing to catch. A container that
+propagates arbitrary throwables offers no contract at the call site: the
+consumer cannot know what might emerge, and so cannot write against any
+container other than the one in front of them. [PSR-11][] takes the same
+position, documenting its container exception for any error while retrieving
+an entry, though none of the researched projects honor it.
+
+Nothing is discarded. The originating throwable is retained as the previous
+exception, so a consumer that needs the underlying cause can reach it.
+
+The cost is real: a consumer can no longer catch a specific exception type
+around a call to `getService()`, and must catch [_IocThrowable_][] and
+examine the previous exception instead.
+
 * * *
 
+[_Error_]: https://php.net/Error
 [_Exception_]: https://php.net/Exception
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory

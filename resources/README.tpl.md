@@ -54,7 +54,8 @@ names are different, and so are non-conflicting.
 ### Why does Ioc-Interop not afford service management?
 
 Ioc-Interop is focused on the concerns around *obtaining* and *consuming*
-services. The affordances for *managing* and *producing* services are a set of separate concerns.
+services. The affordances for *managing* and *producing* services are
+separate concerns.
 
 Earlier drafts of Ioc-Interop were much more expansive, including a resolver
 subsystem and a service management subsystem. These have been extracted to
@@ -82,7 +83,7 @@ in order to retrieve other dependencies from it.
 container for [scalar][] or [array][] values.
 
 Limiting services to objects helps maintain consistent expectations regarding
-service types and behavior. Of the researched projects, 10 return `object`, and
+service types and behavior. Of the researched projects, 11 return `object`, and
 8 return `mixed`, so this restriction is consistent with the majority.
 
 Ioc-Interop recognizes that implementors and consumers often want to make config
@@ -94,6 +95,26 @@ With that in mind, Ioc-Interop encourages the use of one or more config services
 or value objects to make those values available, instead of storing config
 values directly inside a container.
 
+### Why does a `class-string` name not guarantee an instance of that class?
+
+When the `$serviceName` is a `class-string`, the `ioc_service_object` return
+type resolves to that class. It would seem to follow that `getService()`
+should be required to return an instance of it.
+
+It cannot be required, because whether a name *is* a `class-string` is not a
+property of the name. Static analysis answers that question by looking for a
+class of that name in the codebase being analyzed, case-insensitively. A
+service labeled `logger` is a `class-string` in a project that happens to
+define a `Logger` class, and a plain string in one that does not; the same
+call means different things in different codebases. A directive whose
+applicability varies that way cannot be implemented, because the container
+has no way to know which case it is in.
+
+Of the researched projects, Laravel's container and yiisoft/di narrow the
+return type on a `class-string` name in exactly this way, and neither
+requires the returned object to be an instance of it. Aura.Di and Nette DI
+decline to narrow at all, returning `object` from their name-keyed methods.
+
 ### Why does [_IocContainer_][] define `getService()` and not just `get()`?
 
 The vast majority of researched projects, whether PSR-11 conforming or not, use
@@ -101,8 +122,45 @@ the method name `get()`. Contra the research, Ioc-Interop asserts that `get()`
 is too generic, and that the method name should hint at what is being gotten;
 thus, `getService()`.
 
+### Why does Ioc-Interop offer an [_IocContainerFactory_][]?
+
+Container-creation logic is a minority position among the researched projects:
+only four offer any way to create the container itself, and each does so with a
+different signature.
+
+Contra the research, Ioc-Interop asserts that container *creation* is a
+separate concern from container *use*, and thus deserves an interface of its
+own. Separating them affords creating a container more than once: per request
+or per job in a long-running runtime, per test case, or per tenant.
+
+Implementing [_IocContainerFactory_][] is optional. Service consumers should
+typehint on [_IocContainer_][].
+
+### Why must every failure throw an [_IocThrowable_][]?
+
+None of the researched projects do so. Every one of them lets an exception
+from a consumer-supplied factory or constructor propagate unchanged, and
+throws a container exception only for failures it detects itself, such as an
+unknown name or an unresolvable dependency.
+
+Contra the research, Ioc-Interop asserts that a consumer calling
+`getService()` should have exactly one thing to catch. A container that
+propagates arbitrary throwables offers no contract at the call site: the
+consumer cannot know what might emerge, and so cannot write against any
+container other than the one in front of them. [PSR-11][] takes the same
+position, documenting its container exception for any error while retrieving
+an entry, though none of the researched projects honor it.
+
+Nothing is discarded. The originating throwable is retained as the previous
+exception, so a consumer that needs the underlying cause can reach it.
+
+The cost is real: a consumer can no longer catch a specific exception type
+around a call to `getService()`, and must catch [_IocThrowable_][] and
+examine the previous exception instead.
+
 * * *
 
+[_Error_]: https://php.net/Error
 [_Exception_]: https://php.net/Exception
 [_IocContainer_]: #ioccontainer
 [_IocContainerFactory_]: #ioccontainerfactory
