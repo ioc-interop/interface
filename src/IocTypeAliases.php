@@ -7,9 +7,9 @@ namespace IocInterop\Interface;
  * [_IocTypeAliases_][] provides custom PHPStan types to aid static analysis.
  *
  * - ```
- *   ioc_service_name_string class-string<T>|non-empty-string
+ *   ioc_service_name_string non-empty-string
  *   ```
- *     - A `class-string` or `string` name for a service.
+ *     - A `class-string` or non-empty `string` name for a service.
  *
  * - ```
  *   ioc_service_object ($serviceName is class-string<T> ? T : object)
@@ -18,7 +18,7 @@ namespace IocInterop\Interface;
  *
  * @template T of object
  *
- * @phpstan-type ioc_service_name_string class-string<T>|non-empty-string
+ * @phpstan-type ioc_service_name_string non-empty-string
  *
  * @phpstan-type ioc_service_object ($serviceName is class-string<T> ? T : object)
  */
