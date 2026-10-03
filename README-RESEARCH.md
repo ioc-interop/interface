@@ -12,7 +12,7 @@ inversion-of-control containers:
 - [laminas/laminas-di](https://github.com/laminas/laminas-di) (laminas)
 - [league/container](https://github.com/thephpleague/container) (league)
 - [mindplay/unbox](https://github.com/mindplay-dk/unbox) (mindplay)
-- [nette/di](https://github.com/nette/di) (netter)
+- [nette/di](https://github.com/nette/di) (nette)
 - [pimple/pimple](https://github.com/silexphp/Pimple) (pimple)
 - [Phalcon 4.x](https://github.com/phalcon/cphalcon/) (phalcon)
 - [php-di/php-di](https://github.com/PHP-DI/PHP-DI) (phpdi)
@@ -126,6 +126,53 @@ indicates these projects return these types from the container:
 
 11 of the projects return objects; 8 return anything at all.
 
+## Service Names
+
+The projects were exercised by registering and retrieving a service under four
+different names: a defined class name (`stdClass`), a name conforming to the
+rules for naming a class but not defined as one (`foo_1`), a label that is not
+a valid class name (`db.replica`), and a numeric string (`123`).
+
+|             | Accepts as a service name                    |
+| ----------- | -------------------------------------------- |
+| aura        | any string                                   |
+| dice        | any string                                   |
+| flightphp   | any string                                   |
+| ghostwriter | only a defined class, interface, or enum (1) |
+| illuminate  | any string                                   |
+| joomla      | any string                                   |
+| laminas     | - (2)                                        |
+| league      | any string                                   |
+| mindplay    | any string                                   |
+| nette       | any string                                   |
+| phalcon     | - (2)                                        |
+| phpdi       | any string                                   |
+| pimple      | any string                                   |
+| ray         | - (2)                                        |
+| rdlowrey    | any string (3)                               |
+| symfony     | any string                                   |
+| tempest     | only a defined class (4)                     |
+| yii-di      | any string except numeric (5)                |
+| yii-factory | - (2)                                        |
+
+1. `ghostwriter` asserts the name is valid before storing it, throwing
+   _ServiceNotFoundException_ with the message `Service "foo_1" is not a valid
+   class, interface, or enum.`
+
+2. Not exercised.
+
+3. `rdlowrey` sets the service name to `get_class($instance)` when registering
+   an already-instantiated service.
+
+4. `tempest` names the parameter `$className` and reflects on it.
+
+5. `yii-di` throws _InvalidConfigException_ for `123`. PHP coerces numeric
+   string array keys to integers, so the name does not survive as a string.
+
+Of the 15 projects exercised, 13 accept a label that is not a class name; 2
+require the name to be a defined class. None require the name merely to conform
+to the rules for naming a class.
+
 ## Has a service
 
 The projects afford checking to see if the container "has" a service, but the
@@ -152,6 +199,45 @@ meaning is slightly different between them all.
 | tempest     | `has(string $className, null\|string\|UnitEnum $tag = null) : bool` | "Has a definition or a singleton"                         |
 | yii-di      | `has(string $id) : bool`                                            | "Has a definition or a tag"                               |
 | yii-factory | -                                                                   | -                                                         |
+
+The projects were further exercised to see whether "has" and "get" agree with
+each other. Two cases: asking for a class that is defined but was never
+registered, and asking for a registered service whose factory throws.
+
+|             | Unregistered class    | Factory throws      |
+| ----------- | --------------------- | ------------------- |
+| aura        | `false`, then throws  | -                   |
+| dice        | - (1)                 | - (1)               |
+| flightphp   | `false`, then returns | `true`, then throws |
+| ghostwriter | `true`, then returns  | -                   |
+| illuminate  | `false`, then returns | `true`, then throws |
+| joomla      | `false`, then throws  | `true`, then throws |
+| laminas     | - (2)                 | - (2)               |
+| league      | `false`, then throws  | `true`, then throws |
+| mindplay    | `false`, then throws  | `true`, then throws |
+| nette       | `false`, then throws  | -                   |
+| phalcon     | - (2)                 | - (2)               |
+| phpdi       | `true`, then returns  | -                   |
+| pimple      | `false`, then throws  | `true`, then throws |
+| ray         | - (1)                 | - (1)               |
+| rdlowrey    | - (1)                 | - (1)               |
+| symfony     | `false`, then throws  | `true`, then throws |
+| tempest     | `false`, then returns | `true`, then throws |
+| yii-di      | `true`, then returns  | -                   |
+| yii-factory | - (1)                 | - (1)               |
+
+1. Affords no "has" method; see the table above.
+
+2. Not exercised.
+
+Of the 13 projects exercised on the first case, 3 report `false` and then return
+the service anyway (`flightphp`, `illuminate`, `tempest`), and 3 report `true`
+for a service that was never registered with them (`ghostwriter`, `phpdi`,
+`yii-di`). Of the 8 exercised on the second case, all 8 report `true` and then
+throw.
+
+Neither answer binds the other: `true` does not promise that retrieval will
+succeed, and `false` does not promise that it will fail.
 
 
 ## Get a service
