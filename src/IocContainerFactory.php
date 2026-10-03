@@ -12,6 +12,10 @@ interface IocContainerFactory
     /**
      * Returns a new instance of [_IocContainer_][].
      *
+     * - Directives:
+     *
+     *     - Every call MUST return a new instance of [_IocContainer_][].
+     *
      * - Notes:
      *
      *     - **Container instantiation logic is not specified.** Implementations
@@ -19,6 +23,13 @@ interface IocContainerFactory
      *       collection, or some other means to create and populate a container.
      *       Implementations might also choose to return a compiled or otherwise
      *       reconstituted container.
+     *
+     *     - **A new container instance does not necessarily contain new service
+     *       instances.** Whether two containers return the same object for a
+     *       given service name is a matter of service lifetime, which the
+     *       retrieval logic defines. A container drawing on a shared service
+     *       registry, or delegating to a parent container, may hand out the
+     *       same instance as another.
      */
     public function newContainer() : IocContainer;
 }
