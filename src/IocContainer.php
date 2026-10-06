@@ -35,23 +35,22 @@ interface IocContainer
      *       may be accomplished by querying a service management subsystem, or
      *       by some other means.
      *
-     *     - **A `false` result is conclusive; a `true` result is not.** Some
-     *       failures are knowable in advance, as when the container has
-     *       nothing it could use to produce an object for the name. A
-     *       `false` result means the container found such a failure, and
-     *       `getService()` will throw [_IocThrowable_][]. Other failures
-     *       surface only on the attempt, when the means exists but its
-     *       dependencies or its configuration do not. A `true` result
-     *       promises nothing: the container may have checked and found no
-     *       obstacle, or it may not have checked at all. Either result
-     *       speaks only of the call that produced it; a container whose
-     *       state changes may answer differently next time.
+     *     - **A `false` result is conclusive; a `true` result is not.** A
+     *       `false` result means the container already knows it cannot
+     *       produce an object for the `$serviceName`, so `getService()` will
+     *       throw [_IocThrowable_][]. A `true` result means only that the
+     *       container cannot tell in advance whether it will fail to
+     *       produce the `$serviceName`; for example, failures from a
+     *       missing dependency or bad configuration surface only on the
+     *       attempt. Either answer speaks only to the call that produced
+     *       it; a container whose state changes may answer differently
+     *       next time.
      *
      *     - **Every path by which `getService()` could succeed needs a
      *       matching check here.** The directive binds this method to what
      *       `getService()` could do, and `getService()` might do a great
      *       deal: look in a registry, consult a service management
-     *       subsystem, autowire from a class name. Adding a path to
+     *       subsystem, autowire from a class name, and so on. Adding a path to
      *       `getService()` without adding a corresponding check in
      *       `hasService()` leaves the container returning `false` for a
      *       service it can in fact produce.
@@ -68,10 +67,6 @@ interface IocContainer
      *     - Implementations MUST throw [_IocThrowable_][] if the container
      *       cannot return an object for the `$serviceName`, regardless of the
      *       underlying cause.
-     *
-     *     - When an [_Error_][] or [_Exception_][] caused the container to
-     *       fail, implementations MUST retain it as the previous exception of
-     *       the [_IocThrowable_][].
      *
      * - Notes:
      *
@@ -102,13 +97,13 @@ interface IocContainer
      *       logic defines the service lifetime, not the container (per se) and
      *       not the caller requesting the service.
      *
-     *     - **Catching only [_Exception_][] is not enough.** Consumer-supplied
-     *       factories and constructors can raise an [_Error_][] as readily,
-     *       and anything an implementation does not catch will escape as
-     *       something other than an [_IocThrowable_][]. The `return`
-     *       statement is itself a throw site: a non-object value fails the
-     *       declared return type and raises an [_Error_][] from inside the
-     *       method, where only an enclosing `try` catches it.
+     *     - **Make the [_IocThrowable_][] as informative as possible.** Doing so
+     *       helps to debug why the call failed. For one example, if the logic
+     *       for producing an object results in an [_Error_][] or
+     *       [_Exception_][], consider setting that as the `$previous`
+     *       [_Throwable_][] for the [_IocThrowable_][]. For another example,
+     *       consider describing the resolution path in the message itself to
+     *       show where a circular or deeply-nested resolution failed.
      *
      * @param ioc_service_name_string $serviceName
      * @return ioc_service_object

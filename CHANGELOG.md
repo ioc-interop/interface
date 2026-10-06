@@ -8,8 +8,8 @@ Refinements from continued review and research:
   now `non-empty-string`.
 
 - _IocContainer_ `getService()` MUST throw _IocThrowable_ for any failure,
-  not only for an unrecognized service name, and MUST retain a causing
-  _Error_ or _Exception_ as the previous exception.
+  not only for an unrecognized service name. Retaining a causing _Error_ or
+  _Exception_ as the `$previous` _Throwable_ is recommended, not required.
 
 - _IocContainer_ `getService()` returns an object *for* the service name,
   rather than an instance *of* it.

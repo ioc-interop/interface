@@ -58,23 +58,22 @@ This package defines the following interfaces:
           may be accomplished by querying a service management subsystem, or
           by some other means.
 
-        - **A `false` result is conclusive; a `true` result is not.** Some
-          failures are knowable in advance, as when the container has
-          nothing it could use to produce an object for the name. A
-          `false` result means the container found such a failure, and
-          `getService()` will throw [_IocThrowable_][]. Other failures
-          surface only on the attempt, when the means exists but its
-          dependencies or its configuration do not. A `true` result
-          promises nothing: the container may have checked and found no
-          obstacle, or it may not have checked at all. Either result
-          speaks only of the call that produced it; a container whose
-          state changes may answer differently next time.
+        - **A `false` result is conclusive; a `true` result is not.** A
+          `false` result means the container already knows it cannot
+          produce an object for the `$serviceName`, so `getService()` will
+          throw [_IocThrowable_][]. A `true` result means only that the
+          container cannot tell in advance whether it will fail to
+          produce the `$serviceName`; for example, failures from a
+          missing dependency or bad configuration surface only on the
+          attempt. Either answer speaks only to the call that produced
+          it; a container whose state changes may answer differently
+          next time.
 
         - **Every path by which `getService()` could succeed needs a
           matching check here.** The directive binds this method to what
           `getService()` could do, and `getService()` might do a great
           deal: look in a registry, consult a service management
-          subsystem, autowire from a class name. Adding a path to
+          subsystem, autowire from a class name, and so on. Adding a path to
           `getService()` without adding a corresponding check in
           `hasService()` leaves the container returning `false` for a
           service it can in fact produce.
@@ -91,10 +90,6 @@ This package defines the following interfaces:
         - Implementations MUST throw [_IocThrowable_][] if the container
           cannot return an object for the `$serviceName`, regardless of the
           underlying cause.
-
-        - When an [_Error_][] or [_Exception_][] caused the container to
-          fail, implementations MUST retain it as the previous exception of
-          the [_IocThrowable_][].
 
     - Notes:
 
@@ -125,13 +120,13 @@ This package defines the following interfaces:
           logic defines the service lifetime, not the container (per se) and
           not the caller requesting the service.
 
-        - **Catching only [_Exception_][] is not enough.** Consumer-supplied
-          factories and constructors can raise an [_Error_][] as readily,
-          and anything an implementation does not catch will escape as
-          something other than an [_IocThrowable_][]. The `return`
-          statement is itself a throw site: a non-object value fails the
-          declared return type and raises an [_Error_][] from inside the
-          method, where only an enclosing `try` catches it.
+        - **Make the [_IocThrowable_][] as informative as possible.** Doing so
+          helps to debug why the call failed. For one example, if the logic
+          for producing an object results in an [_Error_][] or
+          [_Exception_][], consider setting that as the `$previous`
+          [_Throwable_][] for the [_IocThrowable_][]. For another example,
+          consider describing the resolution path in the message itself to
+          show where a circular or deeply-nested resolution failed.
 
 ### _IocContainerFactory_
 
@@ -151,7 +146,7 @@ This package defines the following interfaces:
 
     - Notes:
 
-        - **Container instantiation logic is not specified.** Implementations
+        - **The logic for this method is expressly unspecified.** Implementations
           might use providers, configuration files, attribute or annotation
           collection, or some other means to create and populate a container.
           Implementations might also choose to return a compiled or otherwise
@@ -314,12 +309,16 @@ container other than the one in front of them. [PSR-11][] takes the same
 position, documenting its container exception for any error while retrieving
 an entry, though none of the researched projects honor it.
 
-Nothing is discarded. The originating throwable is retained as the previous
-exception, so a consumer that needs the underlying cause can reach it.
+Nothing need be discarded: an implementation can retain the originating
+throwable as the `$previous` [_Throwable_][], so a consumer that needs the
+underlying cause can reach it. Ioc-Interop recommends this but does not
+require it, since an implementation that falls back from a failed means of
+producing the service to another isn't obligated to account for the
+attempt it recovered from.
 
 The cost is real: a consumer can no longer catch a specific exception type
-around a call to `getService()`, and must catch [_IocThrowable_][] and
-examine the previous exception instead.
+around a call to `getService()`, and must catch [_IocThrowable_][] and, when
+one is present, examine the `$previous` [_Throwable_][] instead.
 
 * * *
 

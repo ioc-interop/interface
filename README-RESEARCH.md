@@ -92,8 +92,8 @@ non-conforming PSR-11 method signature.
 >
 > The "Opt" projects offer PSR-11 conformance via wrapper classes:
 >
-> - `phalcon` — `Phalcon\Container` delegates `get()` to `Phalcon\Di::getShared()`.
-> - `pimple` — `Pimple\Psr11\Container` delegates `get()` to `Pimple\Container::offsetGet()`.
+> - `phalcon`: `Phalcon\Container` delegates `get()` to `Phalcon\Di::getShared()`.
+> - `pimple`: `Pimple\Psr11\Container` delegates `get()` to `Pimple\Container::offsetGet()`.
 
 ## Service Types
 

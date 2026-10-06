@@ -151,12 +151,16 @@ container other than the one in front of them. [PSR-11][] takes the same
 position, documenting its container exception for any error while retrieving
 an entry, though none of the researched projects honor it.
 
-Nothing is discarded. The originating throwable is retained as the previous
-exception, so a consumer that needs the underlying cause can reach it.
+Nothing need be discarded: an implementation can retain the originating
+throwable as the `$previous` [_Throwable_][], so a consumer that needs the
+underlying cause can reach it. Ioc-Interop recommends this but does not
+require it, since an implementation that falls back from a failed means of
+producing the service to another isn't obligated to account for the
+attempt it recovered from.
 
 The cost is real: a consumer can no longer catch a specific exception type
-around a call to `getService()`, and must catch [_IocThrowable_][] and
-examine the previous exception instead.
+around a call to `getService()`, and must catch [_IocThrowable_][] and, when
+one is present, examine the `$previous` [_Throwable_][] instead.
 
 * * *
 

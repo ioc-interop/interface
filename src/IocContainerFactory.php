@@ -18,7 +18,7 @@ interface IocContainerFactory
      *
      * - Notes:
      *
-     *     - **Container instantiation logic is not specified.** Implementations
+     *     - **The logic for this method is expressly unspecified.** Implementations
      *       might use providers, configuration files, attribute or annotation
      *       collection, or some other means to create and populate a container.
      *       Implementations might also choose to return a compiled or otherwise
