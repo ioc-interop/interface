@@ -296,29 +296,26 @@ typehint on [_IocContainer_][].
 
 ### Why must every failure throw an [_IocThrowable_][]?
 
-None of the researched projects do so. Every one of them lets an exception
-from a consumer-supplied factory or constructor propagate unchanged, and
-throws a container exception only for failures it detects itself, such as an
-unknown name or an unresolvable dependency.
+None of the researched projects throw a single exception type for every
+failure. Every one of them lets an exception from a consumer-supplied
+factory or constructor propagate unchanged, and throws a container
+exception only for failures it detects itself, such as an unknown name or
+an unresolvable dependency.
 
-Contra the research, Ioc-Interop asserts that a consumer calling
-`getService()` should have exactly one thing to catch. A container that
-propagates arbitrary throwables offers no contract at the call site: the
-consumer cannot know what might emerge, and so cannot write against any
-container other than the one in front of them. [PSR-11][] takes the same
-position, documenting its container exception for any error while retrieving
-an entry, though none of the researched projects honor it.
+Contra the research, Ioc-Interop asserts that a consumer calling `getService()`
+should have exactly one thing to catch. A container that propagates arbitrary
+throwables offers no contract at the call site: the consumer cannot know what
+type to expect, and so must write against a concrete implementation instead of
+a standard interface. [PSR-11][] asserts the same thing: it documents a
+container exception for any error while retrieving an entry, though none of the
+researched projects honor it.
 
-Nothing need be discarded: an implementation can retain the originating
-throwable as the `$previous` [_Throwable_][], so a consumer that needs the
-underlying cause can reach it. Ioc-Interop recommends this but does not
-require it, since an implementation that falls back from a failed means of
-producing the service to another isn't obligated to account for the
-attempt it recovered from.
-
-The cost is real: a consumer can no longer catch a specific exception type
-around a call to `getService()`, and must catch [_IocThrowable_][] and, when
-one is present, examine the `$previous` [_Throwable_][] instead.
+A single throwable type need not lose information: an implementation can retain
+the originating [_Error_][] or [_Exception_][] as the `$previous`
+[_Throwable_][], so a consumer that needs the underlying cause can reach it.
+Ioc-Interop recommends this but does not require it, since an implementation
+that falls back from a failed means of producing the service to another isn't
+obligated to account for the attempt it recovered from.
 
 * * *
 
