@@ -110,10 +110,11 @@ call means different things in different codebases. A directive whose
 applicability varies that way cannot be implemented, because the container
 has no way to know which case it is in.
 
-Of the researched projects, Laravel's container and yiisoft/di narrow the
-return type on a `class-string` name in exactly this way, and neither
-requires the returned object to be an instance of it. Aura.Di and Nette DI
-decline to narrow at all, returning `object` from their name-keyed methods.
+Of the researched projects, Laravel's container, mindplay/unbox, and
+yiisoft/di narrow the return type on a `class-string` name in exactly this
+way, and none requires the returned object to be an instance of it. Aura.Di
+and Nette DI decline to narrow at all, returning `object` from their
+name-keyed methods.
 
 ### Why does [_IocContainer_][] allow numeric service names?
 
