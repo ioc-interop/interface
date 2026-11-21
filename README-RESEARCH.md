@@ -21,7 +21,7 @@ inversion-of-control containers:
 - [symfony/dependency-injection](https://github.com/symfony/dependency-injection) (symfony)
 - [tempest/container](https://github.com/tempestphp/tempest-container) (tempest)
 - [yiisoft/di](https://github.com/yiisoft/di) (yii-di)
-- [yiisoft/factory](https://github.com/yiisoft/di) (yii-factory)
+- [yiisoft/factory](https://github.com/yiisoft/factory) (yii-factory)
 
 > **Note:**
 >
@@ -188,7 +188,7 @@ meaning is slightly different between them all.
 | joomla      | `has(string $resourceName) : bool`                                  | "Is a resource key set here or in parent container?"      |
 | laminas     | `has(string $name) : bool`                                          | "Has an instance, or can injector create one?"            |
 | league      | `has(string $id) : bool`                                            | "Has a definition, has a tag, has provided, has delegate" |
-| mindplay    | `has(string $name) : bool`                                          | "Has an instance or factory"
+| mindplay    | `has(string $name) : bool`                                          | "Has an instance or factory"                              |
 | nette       | `hasService(string $name) : bool`                                   | "Has an instance or factory"                              |
 | phalcon     | `has(string $name) : bool`                                          | "Has a services key"                                      |
 | phpdi       | `has(string $id) : bool`                                            | "Has an instance, or a resolvable definition"             |
@@ -325,6 +325,7 @@ Very few of the researched projects offer a factory or builder for the container
 | symfony     | (2) | - |
 | tempest     | - | - |
 | yii-di      | - | - |
+| yii-factory | - | - |
 
 1. `nette` _ContainerBuilder_ looks like it is part of a compiler system.
 
