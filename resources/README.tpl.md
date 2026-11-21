@@ -115,6 +115,27 @@ return type on a `class-string` name in exactly this way, and neither
 requires the returned object to be an instance of it. Aura.Di and Nette DI
 decline to narrow at all, returning `object` from their name-keyed methods.
 
+### Why does [_IocContainer_][] allow numeric service names?
+
+Any non-empty string is a valid service name, `'123'` included. It might seem
+that numeric names should be disallowed, because PHP coerces a numeric string
+array key to an integer: an implementation that keys its registry by service
+name will find `'123'` stored under the integer `123`.
+
+That coercion is a property of PHP arrays, not of service names. It applies
+only to decimal integer strings (`'123'` and `'-5'`, but not `'0123'`, `'1.5'`,
+or `'1e3'`), and only to an implementation that keeps its services in an array
+keyed by name. Lookups are unaffected, since PHP coerces the key on reading the
+same way it does on writing. Nor can a numeric name collide with a
+`class-string`, since no class name may begin with a digit.
+
+Of the researched projects, 12 of 15 accept `'123'` as a service name. Only
+yiisoft/di rejects it for being numeric; ghostwriter and tempest reject it
+only because it does not name a defined class.
+
+An implementation with an array-backed registry can type its keys as
+`array-key` instead of `string`, so that static analysis accepts numeric names.
+
 ### Why does [_IocContainer_][] define `getService()` and not just `get()`?
 
 The vast majority of researched projects, whether PSR-11 conforming or not, use
