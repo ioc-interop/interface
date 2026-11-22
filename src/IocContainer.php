@@ -39,12 +39,11 @@ interface IocContainer
      *       `false` result means the container already knows it cannot
      *       produce an object for the `$serviceName`, so `getService()` will
      *       throw [_IocThrowable_][]. A `true` result means only that the
-     *       container cannot tell in advance whether it will fail to
-     *       produce the `$serviceName`; for example, failures from a
-     *       missing dependency or bad configuration surface only on the
-     *       attempt. Either answer speaks only to the call that produced
-     *       it; a container whose state changes may answer differently
-     *       next time.
+     *       container does not know in advance that it will fail; for example,
+     *       failures from a missing dependency or bad configuration surface
+     *       only on the attempt. Either answer speaks only to the call that
+     *       produced it; a container whose state changes may answer
+     *       differently next time.
      *
      *     - **Every path by which `getService()` could succeed needs a
      *       matching check here.** The directive binds this method to what
