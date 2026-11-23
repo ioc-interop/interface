@@ -1,5 +1,25 @@
 # Change Log
 
+## 1.0.0
+
+First stable release.
+
+- _IocContainer_ `hasService()` note on a `true` result now mirrors the
+  directive.
+
+- _IocContainer_ `getService()` note corrects its account of which names
+  static analysis treats as class names.
+
+- Added Q&A on numeric service names.
+
+- Added mindplay/unbox to the class-string Q&A.
+
+- Tightened several Q&A answers.
+
+- Corrected the yiisoft/factory research link and two research tables.
+
+- No API or directive changes.
+
 ## 1.0.0-beta1
 
 Refinements from continued review and research:
