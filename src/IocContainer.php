@@ -9,8 +9,8 @@ namespace IocInterop\Interface;
  * - Notes:
  *
  *     - **This interface does not afford service management.** The container
- *       will need to create and retain services somehow, whether by itself,
- *       through a [Service-Interop][] implementation, or some other means.
+ *       will need to create and/or retain services somehow, whether by itself,
+ *       through a [Service-Interop][] implementation, or via some other means.
  *
  * @phpstan-import-type ioc_service_name_string from IocTypeAliases
  * @phpstan-import-type ioc_service_object from IocTypeAliases
@@ -85,12 +85,13 @@ interface IocContainer
      *       not what the container promises. A caller that needs the
      *       guarantee has `instanceof` for it.
      *
-     *     - **Static analysis treats a name that could be a class name as
-     *       one.** It looks for the class, not for the intent behind the
-     *       label: `'logger'` is a class-string wherever a `Logger` class
-     *       exists, case notwithstanding. Where a service is not an
-     *       instance of its namesake, a name that cannot be a class name
-     *       avoids the narrowing; a dot, as in `'db.replica'`, is enough.
+     *     - **Static analysis treats a name that *could* be a class name *as*
+     *       a class name.** It looks for the class, not for the intent behind
+     *       the label: `'logger'`, `'Logger'`, and `'LOGGER'` are all
+     *       class-strings wherever a global `Logger` class exists, even when
+     *       the service is not a `Logger`. Any name that static analysis cannot
+     *       read as a class name avoids the narrowing, leaving the return type
+     *       as `object`; a dotted name like `'db.replica'` is one example.
      *
      *     - **The returned instance may be new or shared.** The retrieval
      *       logic defines the service lifetime, not the container (per se) and

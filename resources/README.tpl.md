@@ -53,47 +53,36 @@ names are different, and so are non-conflicting.
 
 ### Why does Ioc-Interop not afford service management?
 
-Ioc-Interop is focused on the concerns around *obtaining* and *consuming*
-services. The affordances for *managing* and *producing* services are
-separate concerns.
+Ioc-Interop is focused on the needs of service *consumers*: obtaining services.
+The needs of service *producers*, such as creating and managing services, are a
+separate concern.
 
 Earlier drafts of Ioc-Interop were much more expansive, including a resolver
 subsystem and a service management subsystem. These have been extracted to
-separate standards, each of which is dependent on Ioc-Interop:
+separate standards, each of which depends on Ioc-Interop:
 
 - [Service-Interop][]
 - [Resolver-Interop][]
 
-This separation helps to maintain a boundary between the needs of service
-consumers (afforded by Ioc-Interop) and service producers (afforded by
-[Service-Interop][] and [Resolver-Interop][]).
-
-Note that Ioc-Interop is independent of [Service-Interop][] and
-[Resolver-Interop][]. Ioc-Interop implementations can use them, or avoid them,
-as implementors see fit.
+Ioc-Interop itself depends on neither. Implementations can use them, or avoid
+them, as implementors see fit.
 
 ### Is [_IocContainer_][] for Dependency Injection or is it a Service Locator?
 
-[_IocContainer_][] acts as a Service Locator only when it is used as a dependency
-in order to retrieve other dependencies from it.
+[_IocContainer_][] acts as a Service Locator only when it is used as a
+dependency to retrieve other dependencies from it.
 
 ### Why does [_IocContainer_][] disallow non-object values?
 
 [_IocContainer_][] is explicitly a *service* container, not a general config
-container for [scalar][] or [array][] values.
-
-Limiting services to objects helps maintain consistent expectations regarding
-service types and behavior. Of the researched projects, 11 return `object`, and
-8 return `mixed`, so this restriction is consistent with the majority.
+container for values of any type. Of the researched projects, 11 return `object`
+and 8 return `mixed`, so this restriction is consistent with the majority.
 
 Ioc-Interop recognizes that implementors and consumers often want to make config
-values easily available, though Ioc-Interop questions what it means (or if it
-is possible) to get a "shared" scalar or array that works the same as a "shared"
-object.
-
-With that in mind, Ioc-Interop encourages the use of one or more config services
-or value objects to make those values available, instead of storing config
-values directly inside a container.
+values easily available, but questions what it means (or if it is possible) to
+get a "shared" [scalar][] or [array][] that works the same as a "shared" object.
+It therefore encourages providing those values through one or more config
+services or value objects, rather than storing them directly inside a container.
 
 ### Why does a `class-string` name not guarantee an instance of that class?
 
@@ -105,8 +94,8 @@ It cannot be required, because whether a name *is* a `class-string` is not a
 property of the name. Static analysis answers that question by looking for a
 class of that name in the codebase being analyzed, case-insensitively. A
 service labeled `logger` is a `class-string` in a project that happens to
-define a `Logger` class, and a plain string in one that does not; the same
-call means different things in different codebases. A directive whose
+define a global `Logger` class, and a plain string in one that does not; the
+same call means different things in different codebases. A directive whose
 applicability varies that way cannot be implemented, because the container
 has no way to know which case it is in.
 
@@ -128,27 +117,26 @@ only to decimal integer strings (`'123'` and `'-5'`, but not `'0123'`, `'1.5'`,
 or `'1e3'`), and only to an implementation that keeps its services in an array
 keyed by name. Lookups are unaffected, since PHP coerces the key on reading the
 same way it does on writing. Nor can a numeric name collide with a
-`class-string`, since no class name may begin with a digit.
+`class-string`, since no class can be declared with a name beginning with a
+digit.
 
-Of the researched projects, 12 of 15 accept `'123'` as a service name. Only
-yiisoft/di rejects it for being numeric; ghostwriter and tempest reject it
-only because it does not name a defined class.
+Of the 15 researched projects tested for service names, 12 accept `'123'`. Only
+yiisoft/di rejects it for being numeric; ghostwriter and tempest reject it only
+because it does not name a defined class.
 
 An implementation with an array-backed registry can type its keys as
 `array-key` instead of `string`, so that static analysis accepts numeric names.
 
 ### Why does [_IocContainer_][] define `getService()` and not just `get()`?
 
-The vast majority of researched projects, whether PSR-11 conforming or not, use
-the method name `get()`. Contra the research, Ioc-Interop asserts that `get()`
-is too generic, and that the method name should hint at what is being gotten;
-thus, `getService()`.
+The vast majority of researched projects use the method name `get()`. Contra
+the research, Ioc-Interop asserts that `get()` is too generic, and that the
+method name should hint at what is being gotten; thus, `getService()`.
 
 ### Why does Ioc-Interop offer an [_IocContainerFactory_][]?
 
-Container-creation logic is a minority position among the researched projects:
-only four offer any way to create the container itself, and each does so with a
-different signature.
+Only four of the researched projects offer any way to create the container
+itself, each with a different signature.
 
 Contra the research, Ioc-Interop asserts that container *creation* is a
 separate concern from container *use*, and thus deserves an interface of its
@@ -161,18 +149,15 @@ typehint on [_IocContainer_][].
 ### Why must every failure throw an [_IocThrowable_][]?
 
 None of the researched projects throw a single exception type for every
-failure. Every one of them lets an exception from a consumer-supplied
-factory or constructor propagate unchanged, and throws a container
-exception only for failures it detects itself, such as an unknown name or
-an unresolvable dependency.
+failure: each lets an exception from a consumer-supplied factory or constructor
+propagate unchanged, and throws a container exception only for failures it
+detects itself, such as an unknown name or an unresolvable dependency.
 
 Contra the research, Ioc-Interop asserts that a consumer calling `getService()`
 should have exactly one thing to catch. A container that propagates arbitrary
 throwables offers no contract at the call site: the consumer cannot know what
 type to expect, and so must write against a concrete implementation instead of
-a standard interface. [PSR-11][] asserts the same thing: it documents a
-container exception for any error while retrieving an entry, though none of the
-researched projects honor it.
+a standard interface.
 
 A single throwable type need not lose information: an implementation can retain
 the originating [_Error_][] or [_Exception_][] as the `$previous`
